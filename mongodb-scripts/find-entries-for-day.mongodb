@@ -1,0 +1,17 @@
+// MongoDB Playground
+// Use Ctrl+Space inside a snippet or a string literal to trigger completions.
+
+// The current database to use.
+use("development");
+
+// Search for documents in the current collection.
+db.entries
+  .find({
+    "_id.userID": { $exists: true },
+    "_id.scheduleDate.year": 2023,
+    "_id.scheduleDate.month": 2,
+    "_id.scheduleDate.day": 28,
+  })
+  .sort({
+    name: 1,
+  });

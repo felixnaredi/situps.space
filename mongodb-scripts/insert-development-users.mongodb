@@ -1,0 +1,16 @@
+use("development");
+
+db.users.drop();
+
+db.users.insertMany([
+    {
+        _id: "ana",
+        displayName: "Ana",
+        theme: "ocean"
+    },
+    {
+        _id: "bob",
+        displayName: "Bob7",
+        theme: "forest",
+    }
+])
