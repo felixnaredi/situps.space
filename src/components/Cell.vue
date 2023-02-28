@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Ref, ref } from "vue";
-import { User } from "../scheme/user";
+import { User } from "../interface/user";
 import UserDayInput from "./UserDayInput.vue";
-import { ScheduleDate } from "../scheme/schedule-date";
+import { ScheduleDate } from "../interface/schedule-date";
 
 defineProps<{ scheduleDate: ScheduleDate }>();
 

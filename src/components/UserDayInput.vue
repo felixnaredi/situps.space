@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { User } from "../scheme/user";
-import { ScheduleDate } from "../scheme/schedule-date";
+import { User } from "../interface/user";
+import { ScheduleDate } from "../interface/schedule-date";
 import { ref } from "vue";
 
 const props = defineProps<{ user: User, scheduleDate: ScheduleDate }>();

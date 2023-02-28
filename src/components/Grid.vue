@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Cell from "./Cell.vue";
-import { ScheduleDate } from "../scheme/schedule-date";
+import { ScheduleDate } from "../interface/schedule-date";
 
 defineProps<{ scheduleDates: ScheduleDate[] }>()
 

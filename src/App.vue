@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import Grid from "./components/Grid.vue";
+import { InclusiveScheduleDateRange } from "./model/schedule-date-range";
 
-const scheduleDates = [
+const scheduleDates = Array.from(new InclusiveScheduleDateRange(
   {
     year: 2023,
     month: 2,
@@ -9,35 +10,10 @@ const scheduleDates = [
   },
   {
     year: 2023,
-    month: 2,
-    day: 28
-  },
-  {
-    year: 2023,
-    month: 3,
-    day: 1
-  },
-  {
-    year: 2023,
-    month: 3,
-    day: 2
-  },
-  {
-    year: 2023,
-    month: 3,
-    day: 3
-  },
-  {
-    year: 2023,
-    month: 3,
-    day: 4
-  },
-  {
-    year: 2023,
     month: 3,
     day: 5
-  },
-]
+  }
+));
 
 </script>
 
@@ -48,5 +24,4 @@ const scheduleDates = [
   <grid :schedule-dates="scheduleDates"></grid>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
