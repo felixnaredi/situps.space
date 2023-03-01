@@ -3,7 +3,6 @@ import vue from "@vitejs/plugin-vue";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-
   const env = loadEnv(mode, process.cwd(), "SITUP");
   console.log(env);
 
@@ -16,7 +15,14 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => path.replace("/api", ""),
         },
+        "/socket.io": {
+          target: env.SITUPS_WS_URL,
+          changeOrigin: true,
+          ws: true,
+          rewrite: (path) => path.replace("/socket.io", ""),
+        },
       },
     },
-  }
+    envPrefix: "SITUPS"
+  };
 });

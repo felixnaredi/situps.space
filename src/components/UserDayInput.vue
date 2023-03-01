@@ -1,31 +1,33 @@
 <script setup lang="ts">
 import { User } from "../interface/user";
 import { ScheduleDate } from "../interface/schedule-date";
-import { ref } from "vue";
+import { Ref, ref, computed } from "vue";
+import { useEntriesStore } from "../store/entries-store";
 
 const props = defineProps<{ user: User, scheduleDate: ScheduleDate }>();
-const amount = ref(null);
 
-fetch("/api/amount", {
-  headers: {
-    "Content-Type": "application/json",
-  },
-  method: "POST",
-  body: JSON.stringify({
-    userID: props.user.userID,
-    scheduleDate: props.scheduleDate,
-  })
-}).then(async response => {
-  const obj = await response.json();
-  if (obj.amount != null) {
-    amount.value = obj.amount;
+const amount: Ref<null | number> = ref(null);
+
+const entryKey = computed(() => {
+  return { userID: props.user.userID, scheduleDate: props.scheduleDate };
+});
+
+//
+// Fetch data for the entry.
+//
+// TODO:
+//   Modifying any parameter of `entryKey` should call this again.
+//
+useEntriesStore().getEntry(entryKey.value, (response) => {
+  if (response.amount != null) {
+    amount.value = response.amount;
   }
 });
 
 async function updateAmount(event: Event) {
   const amount = Number((event.target! as HTMLInputElement).value);
 
-  fetch("/api/update", {
+  fetch("/api/entry/update-amount", {
     headers: {
       "Content-Type": "application/json"
     },

@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
     readonly SITUPS_API_URL: string;
+    readonly SITUPS_WS_URL: string;
 }
 
 interface ImportMeta {
