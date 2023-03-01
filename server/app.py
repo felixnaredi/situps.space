@@ -4,15 +4,44 @@ from flask import Flask, request, abort, jsonify
 from pymongo import MongoClient
 from typing import Dict
 from datetime import datetime
+
+#
+# Initialize logger
+#
 import logging
 
-client = MongoClient("mongodb://localhost:27017")
+logging.basicConfig(level=logging.INFO)
+logging.info("logger initialized")
+
+#
+# Load configs.
+#
+
+import os
+
+if os.environ.get("SITUPS_SERVER_MODE") == "production":
+    logging.info("running server in production mode")
+    from config.production import Config
+else:
+    logging.info("running server in development mode")
+    from config.development import Config
+
+#
+# Initialize Flask.
+#
+app = Flask(__name__)
+app.config.from_object(Config)
+
+#
+# Initialize database.
+#
+client = MongoClient(Config.DATABASE_URL)
+db = client[Config.DATABASE_NAME]
 logging.info("established connection with database")
 
-db = client["production"]
-
-app = Flask(__name__)
-
+#
+# Setup routes.
+#
 
 @app.route("/users", methods=["GET"])
 def route_users():
@@ -115,11 +144,5 @@ def route_update():
         logging.error(f"{type(error)} - {error}")
         abort(400)
 
-
-@app.route("/")
-def hello():
-    return list(
-        db["entries"].find(
-            {}, {"_id": 0, "userID": 1, "name": 1, "scheduleDate": 1, "amount": 1}
-        )
-    )
+if __name__ == "__main__":
+    app.run(host=Config.HOST, port=Config.PORT)
