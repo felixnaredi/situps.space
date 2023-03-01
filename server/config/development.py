@@ -1,9 +1,9 @@
-class Config:
-    # TODO:
-    #   Not sure if flask development mode is actually enabled.
+import config.local.development
+
+class Config(config.local.development.Config):
     ENV = "development"
     DEBUG = True
-    DATABASE_URL = "mongodb://localhost:27017"
     DATABASE_NAME = "development"
-    HOST = "localhost"
-    PORT = 5000
+    # DATABASE_URL = "mongodb://localhost:27017"
+    # HOST = "127.0.0.1"
+    # PORT = 5000

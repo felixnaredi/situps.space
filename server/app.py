@@ -20,12 +20,20 @@ logging.info("logger initialized")
 
 import os
 
-if os.environ.get("SITUPS_SERVER_MODE") == "production":
-    logging.info("running server in production mode")
+server_mode = os.environ.get("SITUPS_SERVER_MODE")
+
+if server_mode == "production":
     from config.production import Config
+
+    logging.info(
+        f"running server in {server_mode} mode at {Config.HOST}:{Config.PORT}"
+    )
 else:
-    logging.info("running server in development mode")
     from config.development import Config
+
+    logging.info(
+        f"running server in {server_mode} mode at {Config.HOST}:{Config.PORT}"
+    )
 
 #
 # Initialize Flask.
