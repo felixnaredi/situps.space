@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from flask import Flask, request, abort, jsonify
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, emit
 from pymongo import MongoClient
-from typing import Dict
+from typing import Dict, Optional
 from datetime import datetime
 
 #
@@ -25,15 +25,11 @@ server_mode = os.environ.get("SITUPS_SERVER_MODE")
 if server_mode == "production":
     from config.production import Config
 
-    logging.info(
-        f"running server in {server_mode} mode at {Config.HOST}:{Config.PORT}"
-    )
+    logging.info(f"running server in {server_mode} mode at {Config.HOST}:{Config.PORT}")
 else:
     from config.development import Config
 
-    logging.info(
-        f"running server in {server_mode} mode at {Config.HOST}:{Config.PORT}"
-    )
+    logging.info(f"running server in {server_mode} mode at {Config.HOST}:{Config.PORT}")
 
 #
 # Initialize Flask.
@@ -60,6 +56,30 @@ logging.info("established connection with database")
 @app.route("/users", methods=["GET"])
 def route_users():
     return list(db["users"].find({}, {"userID": "$_id", "displayName": 1, "theme": 1}))
+
+
+# TODO:
+#   The error handling is sloppy. It should be clear when errors are thrown because the request was
+#   bad and what went wrong.
+#
+#   VALUE: 4, ESTIMATE: 3
+
+# TODO:
+#   Should parsing commits allow extra fields (like it does now) or should it be strict?
+#
+
+# TODO:
+#   The boilerplate needed to create database and event structues is causing too much bugs. The
+#   debugging is hurting the velocity.
+#
+#   It would be worth a moderate to large amount of effort to lessen it. Third party libraries,
+#   annotations and clever interspection are all welcome. They are only required to store data so it
+#   should be possible.
+#
+#   Too be clear. Writting them goes fast and they are readable. It is the time debugging every 
+#   minor change to them that is expensive.
+#
+#   VALUE: 7, ESTIMATE: 7
 
 
 def try_int(x) -> int:
@@ -107,82 +127,143 @@ class EntryKey:
         return {"userID": self.user_id, "scheduleDate": self.schedule_date.json()}
 
 
-class EntryRequest:
-    class UpdateAmount:
-        def __init__(self, obj: Dict):
-            self.entry_key = EntryKey.from_json(obj)
-            self.amount = try_int(obj["amount"])
+class EntryData:
+    def __init__(self, amount: int):
+        self.amount = amount
 
-        def json(self):
-            return {"entriesKey": self.entry_key.json(), "amount": self.amount}
+    @staticmethod
+    def from_json(json: Dict) -> EntryData:
+        return EntryData(amount=try_int(json["amount"]))
 
+    def json(self) -> Dict:
+        return {"amount": self.amount}
+
+
+def fetch_entry_data_from_database(entry_key: EntryKey) -> Optional[EntryData]:
+    if x := db["entries"].find_one(
+        {"_id": entry_key.json(), "amount": {"$gt": 0}},
+        {"_id": 0, "amount": 1},
+    ):
+        return EntryData.from_json(x)
+    else:
+        return None
+
+
+class EntryEvent:
     class Get:
         """
         Request sent by websocket containing a `EntryKey`. The server acknoledges the message
         with the available data for the entry with the given key.
-
-        TODO:
-          Implement robust strategy for requests where the query can't find an entry.
         """
 
         def __init__(self, json: Dict):
             self.entry_key = EntryKey.from_json(json["entryKey"])
 
+    class Update:
+        """
+        Request sent by websocket containing a `EntryKey` and data used to update the entry with
+        the key.
+        """
 
-@app.route("/entry/update-amount", methods=["POST"])
-def route_update():
-    try:
-        req = EntryRequest.UpdateAmount(request.json)
+        def __init__(self, json: Dict):
+            self.entry_key = EntryKey.from_json(json["entryKey"])
+            self.new_value = EntryData.from_json(json["newValue"])
 
-        db["commits"].insert_one(
-            {"date": datetime.utcnow(), "kind": "update-amount", "data": req.json()}
-        )
+        def json(self):
+            return {"entryKey": self.entry_key.json(), "newValue": self.new_value.json()}
 
-        db["entries"].update_one(
-            {"_id": req.entry_key.json()},
-            {"$set": {"amount": req.amount}},
-            upsert=True,
-        )
-        return jsonify(success=True)
+    class StateChanged:
+        """
+        The response from the server broadcast to the clients when the state on the entries changes.
+        """
 
-    except Exception as error:
-        logging.error(f"{type(error)} - {error}")
-        abort(400)
+        def __init__(
+            self,
+            entry_key: EntryKey,
+            old_value: Optional[EntryData],
+            new_value: EntryData,
+        ):
+            self.entry_key = entry_key
+            self.old_value = old_value
+            self.new_value = new_value
+
+        def json(self):
+            return {
+                "entryKey": self.entry_key.json(),
+                "oldValue": self.old_value.json() if self.old_value else None,
+                "newValue": self.new_value.json(),
+            }
 
 
-@socketio.on("connect")
-def socketio_connect():
-    logging.info(f"connected with socket on namespace '/entry'")
-
-
-@socketio.on("disconnect")
-def socketio_disconnect():
-    logging.info(f"disconnected with socket")
-
-
-@socketio.on("acc-connect", namespace="/entry")
-def socketio_entry_message(json):
-    logging.info(f"entry/acc-connect: {json}")
+@socketio.on("ack-connect", namespace="/entry")
+def socketio_entry_ack_connect():
+    logging.info(f"entry/ack-connect: {request.sid}")
 
 
 @socketio.on("get", namespace="/entry")
 def socketio_entry_get(json):
-    logging.info(f"socket_entry_get: ${json}")
+    logging.info(f"socket_entry_get: {json}")
 
     try:
-        req = EntryRequest.Get(json)
-
-        if x := db["entries"].find_one(
-            {"_id": req.entry_key.json(), "amount": {"$gt": 0}},
-            {"_id": 0, "amount": 1},
-        ):
-            return {"amount": x["amount"]}
-        else:
-            return {"amount": None}
-
+        req = EntryEvent.Get(json)
     except Exception as error:
         logging.error(f"{type(error)} - {error}")
         abort(400)
+
+    if data := fetch_entry_data_from_database(req.entry_key):
+        return {"entryData": data.json()}
+    else:
+        return {"entryData": None}
+
+
+@socketio.on("update", namespace="/entry")
+def socketio_entry_update(json):
+    logging.info(f"socket_entry_update: {json}")
+
+    #
+    # Parse request. Abort if it is bad.
+    #
+    try:
+        req = EntryEvent.Update(json)
+    except Exception as error:
+        logging.error(f"{type(error)} - {error}")
+        abort(400)
+
+    #
+    # Log commit in database.
+    #
+    db["commits"].insert_one(
+        {
+            "date": datetime.utcnow(),
+            "client": request.sid,
+            "namespace": "/entry",
+            "event": "update",
+            "data": req.json(),
+        }
+    )
+
+    #
+    # Fetch old value.
+    #
+    old_value = fetch_entry_data_from_database(req.entry_key)
+
+    #
+    # Update the entry, or add a new one if the key was not present.
+    #
+    db["entries"].update_one(
+        {"_id": req.entry_key.json()},
+        {"$set": req.new_value.json()},
+        upsert=True,
+    )
+
+    #
+    # Broadcast the update.
+    #
+    emit(
+        "state-changed",
+        EntryEvent.StateChanged(req.entry_key, old_value, req.new_value).json(),
+        broadcast=True,
+    )
 
 
 if __name__ == "__main__":

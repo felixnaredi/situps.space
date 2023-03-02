@@ -1,4 +1,6 @@
+import { EntryData } from "./entry";
+
 
 export interface EntryGetResponse {
-    readonly amount: null | number;
+    readonly entryData: null | EntryData;
 }

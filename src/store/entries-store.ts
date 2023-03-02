@@ -4,7 +4,7 @@ import { Ref, ref, computed } from "vue";
 import { InclusiveScheduleDateRange } from "../model/schedule-date-range";
 import { io } from "socket.io-client";
 import { EntryGetResponse } from "../interface/response";
-import { EntryKey } from "../interface/entry-key";
+import { EntryKey } from "../interface/entry";
 
 /**
  * Store used to keep track of the state of the entries.
@@ -22,7 +22,7 @@ export const useEntriesStore = defineStore("entries", () => {
   //
   socket.on("connect", () => {
     console.log("`useEntriesStore` connected to web-socket");
-    socket.emit("acc-connect", { message: "useEntriesStore connected" });
+    socket.emit("ack-connect");
   });
 
   const scheduleDatesRef: Ref<ScheduleDate[]> = ref([]);
@@ -42,11 +42,27 @@ export const useEntriesStore = defineStore("entries", () => {
     socket.emit("get", { entryKey }, callback);
   }
 
+  function updateEntry(entryKey: EntryKey, amount: number) {
+    socket.emit("update", { entryKey, newValue: { amount } });
+  }
+
+  socket.on("state-changed", (message) => {
+    console.log(message);
+  });
+
   return {
     /**
      * Sets the range of scheduled dates.
      */
     setScheduleDateRange,
+
+    /**
+     * Updates the state of a entry.
+     *
+     * @param entryKey Key to the entry to update.
+     * @param amount New value.
+     */
+    updateEntry,
 
     /**
      * Gets the data of the entry with identified by `entryKey`.

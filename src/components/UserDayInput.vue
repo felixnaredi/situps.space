@@ -19,25 +19,14 @@ const entryKey = computed(() => {
 //   Modifying any parameter of `entryKey` should call this again.
 //
 useEntriesStore().getEntry(entryKey.value, (response) => {
-  if (response.amount != null) {
-    amount.value = response.amount;
+  if (response.entryData != null) {
+    amount.value = response.entryData.amount;
   }
 });
 
 async function updateAmount(event: Event) {
   const amount = Number((event.target! as HTMLInputElement).value);
-
-  fetch("/api/entry/update-amount", {
-    headers: {
-      "Content-Type": "application/json"
-    },
-    method: "POST",
-    body: JSON.stringify({
-      userID: props.user.userID,
-      scheduleDate: props.scheduleDate,
-      amount
-    })
-  }).then(console.log);
+  useEntriesStore().updateEntry(entryKey.value, amount);
 }
 
 </script>
