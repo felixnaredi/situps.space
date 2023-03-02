@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort
 from flask_socketio import SocketIO, emit
 from pymongo import MongoClient
 from typing import Dict, Optional
@@ -84,13 +84,19 @@ def route_users():
 
 def try_int(x) -> int:
     if type(x) != int:
-        raise TypeError(f"expected '{x}' to be int")
+        raise TypeError(f"expected '{x}' to be `int`")
     return x
+
+def try_optional_int(x) -> Optional[int]:
+    if type(x) == int or x is None:
+        return x
+    else:
+        raise TypeError(f"expected '{x}' to be `int` or `None`")
 
 
 def try_str(x) -> str:
     if type(x) != str:
-        raise TypeError(f"expected '{x} to be str")
+        raise TypeError(f"expected '{x} to be `str`")
     return x
 
 
@@ -128,12 +134,12 @@ class EntryKey:
 
 
 class EntryData:
-    def __init__(self, amount: int):
+    def __init__(self, amount: Optional[int]):
         self.amount = amount
 
     @staticmethod
     def from_json(json: Dict) -> EntryData:
-        return EntryData(amount=try_int(json["amount"]))
+        return EntryData(amount=try_optional_int(json["amount"]))
 
     def json(self) -> Dict:
         return {"amount": self.amount}

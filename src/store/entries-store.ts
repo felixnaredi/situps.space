@@ -3,8 +3,11 @@ import { ScheduleDate } from "../interface/schedule-date";
 import { Ref, ref, computed } from "vue";
 import { InclusiveScheduleDateRange } from "../model/schedule-date-range";
 import { io } from "socket.io-client";
-import { EntryGetResponse } from "../interface/response";
-import { EntryKey } from "../interface/entry";
+import {
+  EntryEventGetResponse,
+  EntryEventStateChange,
+} from "../interface/response";
+import { EntryKey, EntryKeyIdentifier } from "../interface/entry";
 
 /**
  * Store used to keep track of the state of the entries.
@@ -37,17 +40,37 @@ export const useEntriesStore = defineStore("entries", () => {
 
   function getEntry(
     entryKey: EntryKey,
-    callback: (response: EntryGetResponse) => void
+    callback: (response: EntryEventGetResponse) => void
   ) {
     socket.emit("get", { entryKey }, callback);
   }
 
-  function updateEntry(entryKey: EntryKey, amount: number) {
+  function updateEntry(entryKey: EntryKey, amount: null | number) {
     socket.emit("update", { entryKey, newValue: { amount } });
   }
 
-  socket.on("state-changed", (message) => {
-    console.log(message);
+  // TODO:
+  //   This broadcaster is very simple. Make it more robust or find a third party library for it.
+
+  const stateChangeListeners: Record<
+    string,
+    (message: EntryEventStateChange) => void
+  > = {};
+
+  function subscribeToStateChange(
+    key: EntryKey,
+    callback: (message: EntryEventStateChange) => void
+  ) {
+    stateChangeListeners[EntryKeyIdentifier(key)] = callback;
+  }
+
+  socket.on("state-changed", (message: EntryEventStateChange) => {
+    console.log("state-change", message);
+    
+    const callback = stateChangeListeners[EntryKeyIdentifier(message.entryKey)];
+    if (callback != undefined) {
+      callback(message);
+    }
   });
 
   return {
@@ -63,6 +86,15 @@ export const useEntriesStore = defineStore("entries", () => {
      * @param amount New value.
      */
     updateEntry,
+
+    /**
+     * Subscribes to the websocket event 'state-change' and calls `callback` every time `entryKey` of
+     * the message is equal to `key`.
+     *
+     * @param key Key for the entry that the broadcaster will notify about.
+     * @param callback Function to be called.
+     */
+    subscribeToStateChange,
 
     /**
      * Gets the data of the entry with identified by `entryKey`.

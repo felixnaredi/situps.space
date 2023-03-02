@@ -25,9 +25,28 @@ useEntriesStore().getEntry(entryKey.value, (response) => {
 });
 
 async function updateAmount(event: Event) {
-  const amount = Number((event.target! as HTMLInputElement).value);
-  useEntriesStore().updateEntry(entryKey.value, amount);
+  const value = (event.target! as HTMLInputElement).value;
+  if (value == "") {
+    useEntriesStore().updateEntry(entryKey.value, null);
+  } else {
+    useEntriesStore().updateEntry(entryKey.value, Number(value));
+  }
 }
+
+//
+// Subscribe to changes of the entry.
+//
+// TODO:
+//   Modifying any parameter of `entryKey` should remove the callback from the broadcaster and add
+//   a callback for the new `entryKey`.
+//
+useEntriesStore().subscribeToStateChange(entryKey.value, (message) => {
+  if (message.newValue.amount) {
+    amount.value = message.newValue.amount;
+  } else {
+    amount.value = null;
+  }
+});
 
 </script>
 
