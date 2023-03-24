@@ -6,6 +6,11 @@ from pymongo import MongoClient
 from typing import Dict, Optional
 from datetime import datetime
 
+# TODO:
+#   This is just a temporary work around.
+from engineio.payload import Payload
+Payload.max_decode_packets = 128
+
 #
 # Initialize logger
 #
@@ -53,7 +58,7 @@ logging.info("established connection with database")
 #
 
 
-@app.route("/users", methods=["GET"])
+@app.route("/api/users", methods=["GET"])
 def route_users():
     return list(db["users"].find({}, {"userID": "$_id", "displayName": 1, "theme": 1}))
 
