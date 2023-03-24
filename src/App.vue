@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import Grid from "./components/Grid.vue";
+import { ScheduleDate } from "./interface/schedule-date";
 import { useEntriesStore } from "./store/entries-store";
 
 useEntriesStore().setScheduleDateRange(
-  {
+  new ScheduleDate({
     year: 2023,
     month: 2,
     day: 27
-  },
-  {
+  }),
+  new ScheduleDate({
     year: 2023,
     month: 3,
-    day: 5
-  }
+    day: 26
+  })
 )
 
 </script>

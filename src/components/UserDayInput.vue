@@ -9,7 +9,13 @@ const props = defineProps<{ user: User, scheduleDate: ScheduleDate }>();
 const amount: Ref<null | number> = ref(null);
 
 const entryKey = computed(() => {
-  return { userID: props.user.userID, scheduleDate: props.scheduleDate };
+  return {
+    userID: props.user.userID, scheduleDate: {
+      year: props.scheduleDate.year,
+      month: props.scheduleDate.month,
+      day: props.scheduleDate.day,
+    }
+  };
 });
 
 //
@@ -51,6 +57,10 @@ useEntriesStore().subscribeToStateChange(entryKey.value, (message) => {
 </script>
 
 <template>
+  <!-- 
+    TODO:
+      Theme styles should be resolved in another file.
+  -->
   <div class="border-t-2 border-solid border-stone-700" :class="{
     'bg-sky-200': user.theme == 'ocean' && amount == null,
     'bg-sky-500': user.theme == 'ocean' && amount != null,

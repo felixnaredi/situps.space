@@ -1,4 +1,4 @@
-import { dateComesBefore, ScheduleDate } from "../interface/schedule-date";
+import { ScheduleDate } from "../interface/schedule-date";
 
 const LAST_DAY_OF_MONTH: Record<number, number> = {
   1: 31,
@@ -14,10 +14,6 @@ const LAST_DAY_OF_MONTH: Record<number, number> = {
   11: 30,
   12: 31,
 };
-
-function isLeapYear(year: number): boolean {
-  return year % 4 == 0 && (year % 400 == 0 || year % 100 != 0);
-}
 
 class ScheduleDateIterator implements Iterator<ScheduleDate> {
   private current: ScheduleDate;
@@ -36,37 +32,37 @@ class ScheduleDateIterator implements Iterator<ScheduleDate> {
       //
       if (
         this.current.month != 2 ||
-        !(isLeapYear(this.current.year) && this.current.day == 28)
+        !(this.current.isLeapYear && this.current.day == 28)
       ) {
         //
         // Check if the year should be incremented.
         //
         if (this.current.month == 12) {
-          this.current = {
+          this.current = new ScheduleDate({
             day: 1,
             month: 1,
             year: this.current.year + 1,
-          };
+          });
         } else {
-          this.current = {
+          this.current = new ScheduleDate({
             day: 1,
             month: this.current.month + 1,
             year: this.current.year,
-          };
+          });
         }
       } else {
-        this.current = {
+        this.current = new ScheduleDate({
           day: this.current.day + 1,
           month: this.current.month,
           year: this.current.year,
-        };
+        });
       }
     } else {
-      this.current = {
+      this.current = new ScheduleDate({
         day: this.current.day + 1,
         month: this.current.month,
         year: this.current.year,
-      };
+      });
     }
     //
     // Return the incremented state.
@@ -97,7 +93,7 @@ export class InclusiveScheduleDateRange implements Iterable<ScheduleDate> {
     return {
       next: () => {
         const value = current.next().value;
-        if (dateComesBefore(value, end)) {
+        if (value.before(end)) {
           return {
             done: false,
             value,

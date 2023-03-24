@@ -31,10 +31,6 @@ current goal, or worse, become forgotten.
   - VALUE: ?, ESTIMATE: ?
 
 ### TODO:
-  Move database to server directory.
-  - VALUE: 2, ESTIMATE: 1
-
-### TODO:
   It would probably not be a bad idea to add a task board to the project. Just to keep track of 
   things.
   
@@ -56,3 +52,13 @@ current goal, or worse, become forgotten.
 
 ### TODO
   Change the name of `components/UserDayInput` to something better.
+
+### TODO - Design
+  Each week, Monday to Sunday (darn... way in the future localization will be necesarry), should be
+  separated vertically. There is probably room to add a label of the week number.
+
+### TODO - UX
+  The app could be made much more versitile by letting users add new weekly goals. Too keep things
+  simple, just changing the header (the one that currently says "Situps") to another name would
+  suffice. Of course the content of the entries changes accordingly but strictly talking UI the
+  behavior would be identical.

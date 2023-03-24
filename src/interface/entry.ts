@@ -1,19 +1,17 @@
-import { ScheduleDate } from "./schedule-date";
-
 /**
  * Key used to identify an entry on the server and frontend.
  */
-export interface EntryKey {
+export type EntryKey = {
   readonly userID: string;
-  readonly scheduleDate: ScheduleDate;
-}
+  readonly scheduleDate: {
+    readonly year: number;
+    readonly month: number;
+    readonly day: number;
+  };
+};
 
 export function EntryKeyIdentifier(entryKey: EntryKey): string {
-  const userID = entryKey.userID;
-  const year = entryKey.scheduleDate.year;
-  const month = entryKey.scheduleDate.month;
-  const day = entryKey.scheduleDate.day;
-  return JSON.stringify({ userID, scheduleDate: { year, month, day } });
+  return JSON.stringify(entryKey);
 }
 
 export interface EntryData {

@@ -16,8 +16,6 @@ export const useEntriesStore = defineStore("entries", () => {
   //
   // Create socket under the namespace "/entry".
   //
-  // TODO:
-  //   It would be nice if this could be done via proxy instead.
   const socket = io(`${import.meta.env.SITUPS_WS_URL}/entry`);
 
   //
@@ -66,7 +64,7 @@ export const useEntriesStore = defineStore("entries", () => {
 
   socket.on("state-changed", (message: EntryEventStateChange) => {
     console.log("state-change", message);
-    
+
     const callback = stateChangeListeners[EntryKeyIdentifier(message.entryKey)];
     if (callback != undefined) {
       callback(message);
