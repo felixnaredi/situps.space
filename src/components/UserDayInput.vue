@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { User } from "../interface/user";
-import { ScheduleDate } from "../interface/schedule-date";
+import { ScheduleDate } from "../model/schedule-date";
 import { Ref, ref, computed } from "vue";
 import { useEntriesStore } from "../store/entries-store";
 

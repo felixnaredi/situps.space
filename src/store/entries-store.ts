@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ScheduleDate } from "../interface/schedule-date";
+import { ScheduleDate } from "../model/schedule-date";
 import { Ref, ref, computed } from "vue";
 import { InclusiveScheduleDateRange } from "../model/schedule-date-range";
 import { io } from "socket.io-client";

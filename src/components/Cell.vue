@@ -2,7 +2,7 @@
 import { Ref, ref } from "vue";
 import { User } from "../interface/user";
 import UserDayInput from "./UserDayInput.vue";
-import { ScheduleDate } from "../interface/schedule-date";
+import { ScheduleDate } from "../model/schedule-date"
 
 defineProps<{ scheduleDate: ScheduleDate }>();
 

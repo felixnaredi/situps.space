@@ -1,19 +1,4 @@
-import { ScheduleDate } from "../interface/schedule-date";
-
-const LAST_DAY_OF_MONTH: Record<number, number> = {
-  1: 31,
-  2: 28,
-  3: 31,
-  4: 30,
-  5: 31,
-  6: 30,
-  7: 31,
-  8: 31,
-  9: 30,
-  10: 31,
-  11: 30,
-  12: 31,
-};
+import { ScheduleDate } from "./schedule-date";
 
 class ScheduleDateIterator implements Iterator<ScheduleDate> {
   private current: ScheduleDate;
@@ -23,50 +8,11 @@ class ScheduleDateIterator implements Iterator<ScheduleDate> {
   }
 
   public next(): IteratorResult<ScheduleDate> {
-    const lastDayOfMonth = LAST_DAY_OF_MONTH[this.current.month];
     const old = this.current;
-
-    if (this.current.day >= lastDayOfMonth) {
-      //
-      // Check if the month should be incremented.
-      //
-      if (
-        this.current.month != 2 ||
-        !(this.current.isLeapYear && this.current.day == 28)
-      ) {
-        //
-        // Check if the year should be incremented.
-        //
-        if (this.current.month == 12) {
-          this.current = new ScheduleDate({
-            day: 1,
-            month: 1,
-            year: this.current.year + 1,
-          });
-        } else {
-          this.current = new ScheduleDate({
-            day: 1,
-            month: this.current.month + 1,
-            year: this.current.year,
-          });
-        }
-      } else {
-        this.current = new ScheduleDate({
-          day: this.current.day + 1,
-          month: this.current.month,
-          year: this.current.year,
-        });
-      }
-    } else {
-      this.current = new ScheduleDate({
-        day: this.current.day + 1,
-        month: this.current.month,
-        year: this.current.year,
-      });
-    }
-    //
-    // Return the incremented state.
-    //
+    this.current = new ScheduleDate(
+      this.current.year,
+      this.current.dayOffset + 1
+    );
     return {
       done: false,
       value: old,
@@ -93,6 +39,7 @@ export class InclusiveScheduleDateRange implements Iterable<ScheduleDate> {
     return {
       next: () => {
         const value = current.next().value;
+
         if (value.before(end)) {
           return {
             done: false,
