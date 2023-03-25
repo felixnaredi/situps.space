@@ -30,12 +30,6 @@ current goal, or worse, become forgotten.
   Look into MongoDB schemes.
   - VALUE: ?, ESTIMATE: ?
 
-### TODO:
-  It would probably not be a bad idea to add a task board to the project. Just to keep track of 
-  things.
-  
-  The board would not be a replacement of this file though. This file servers other purposes.
-
 ### SECURITY:
   Typing a non integer value (floating point number or text) in the input text field setting the
   `amount` of a entry causes *Internal Server Error 500*.
