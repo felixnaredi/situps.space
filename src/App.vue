@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Grid from "./components/Grid.vue";
+import WeekRow from "./components/WeekRow.vue";
 import { ScheduleDate } from "./model/schedule-date";
 import { useEntriesStore } from "./store/entries-store";
 
@@ -22,7 +22,9 @@ useEntriesStore().setScheduleDateRange(
   <div class="flex justify-center">
     <h1 class="mt-2 text-white text-2xl underline">Situps</h1>
   </div>
-  <grid></grid>
+  <week-row class="m-8"></week-row>
+  <week-row class="m-8"></week-row>
+  <week-row class="m-8"></week-row>
 </template>
 
 <style scoped></style>
