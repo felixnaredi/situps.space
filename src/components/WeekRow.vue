@@ -36,6 +36,8 @@ onMounted(() => {
         <div class="pt-4 border-t-solid border-t-2 border-t-orange-400" :style="{ width: separatorWidth + 'px' }"></div>
         <h2 class="text-slate-200 text-xl mb-4">{{ dates[0].week }}</h2>
         <div ref="dayCardContainer" class="flex flex-wrap justify-stretch">
+            <!-- TODO: -->
+            <!-- Using `dayOffset` as key can repeat if dates from different years are presented. -->
             <day-card v-for="date in dates" :key="date.dayOffset" :date="date" class="mb-6 mr-8" />
         </div>
     </div>

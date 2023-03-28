@@ -89,7 +89,12 @@ export class ScheduleDate {
   }
 
   public get week(): number {
-    return mod(Math.floor((this.dayOffset - mod(this.weekday - 1, 7)) / 7), 52) + 1;
+    return (
+      mod(
+        Math.floor(this.reversedToWeekday(Weekday.MONDAY).dayOffset / 7),
+        52
+      ) + 1
+    );
   }
 
   public get isLeapYear(): boolean {
@@ -102,6 +107,13 @@ export class ScheduleDate {
     } else {
       return this._year < other._year;
     }
+  }
+
+  public reversedToWeekday(weekday: Weekday): ScheduleDate {
+    return new ScheduleDate(
+      this._year,
+      this._dayOffset - mod(this.weekday - weekday, 7)
+    );
   }
 }
 

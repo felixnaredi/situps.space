@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ScheduleDate } from "../model/schedule-date";
+import { ScheduleDate, Weekday } from "../model/schedule-date";
 import { Ref, ref, computed } from "vue";
 import { InclusiveScheduleDateRange } from "../model/schedule-date-range";
 import { io } from "socket.io-client";
@@ -27,10 +27,23 @@ export const useEntriesStore = defineStore("entries", () => {
   });
 
   const scheduleDatesRef: Ref<ScheduleDate[]> = ref([]);
-
   const scheduleDates = computed(() => scheduleDatesRef.value);
 
+  const weeks = computed(() => {
+    return scheduleDatesRef.value.reduce(
+      (acc: Record<number, ScheduleDate[]>, date) => {
+        (acc[date.week] = acc[date.week] || []).push(date);
+        return acc;
+      },
+      {}
+    );
+  });
+
+  // TODO:
+  //   The behavior of the range is a bit quirky and should probably be more robustly defined.
   function setScheduleDateRange(from: ScheduleDate, to: ScheduleDate) {
+    from = from.reversedToWeekday(Weekday.MONDAY);
+    to = to.reversedToWeekday(Weekday.SUNDAY);
     scheduleDatesRef.value = Array.from(
       new InclusiveScheduleDateRange(from, to)
     );
@@ -106,5 +119,10 @@ export const useEntriesStore = defineStore("entries", () => {
      * The scheduled dates of the entries.
      */
     scheduleDates,
+
+    /**
+     * The scheduled dates grouped by week number.
+     */
+    weeks,
   };
 });
