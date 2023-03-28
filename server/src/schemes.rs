@@ -6,6 +6,7 @@ use serde::{
 pub type UserID = String;
 
 #[derive(Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GregorianScheduleDate
 {
     year: i32,
@@ -14,6 +15,7 @@ pub struct GregorianScheduleDate
 }
 
 #[derive(Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EntryKey
 {
     user_id: UserID,
@@ -21,14 +23,27 @@ pub struct EntryKey
 }
 
 #[derive(Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EntryData
 {
     amount: u32,
 }
 
 #[derive(Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Entry
 {
-    key: EntryKey,
+    #[serde(rename = "_id")]
+    id: EntryKey,
     value: EntryData,
+}
+
+#[derive(Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct User
+{
+    #[serde(rename = "_id")]
+    id: UserID,
+    display_name: String,
+    theme: String,
 }

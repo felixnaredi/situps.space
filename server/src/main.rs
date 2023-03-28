@@ -1,3 +1,5 @@
+mod api;
+mod db;
 mod schemes;
 
 use std::{
@@ -5,30 +7,12 @@ use std::{
     fs::File,
 };
 
-use mongodb::{
-    bson::doc,
-    options::{
-        ClientOptions,
-        ServerApi,
-        ServerApiVersion,
-    },
-    Client,
-};
-use serde::{
-    Deserialize,
-    Serialize,
-};
 use simplelog::SimpleLogger;
-use warp::Filter;
 
-#[derive(Debug, Deserialize, Serialize)]
-struct Config
-{
-    database_url: String,
-    database: String,
-    socket_address: [u8; 4],
-    socket_port: u16,
-}
+use crate::api::{
+    Config,
+    API,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>>
@@ -48,19 +32,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>
         config_file_name
     )))?;
 
-    let mut client_options = ClientOptions::parse(config.database_url).await?;
-    client_options.server_api = Some(ServerApi::builder().version(ServerApiVersion::V1).build());
+    //
+    // Run API.
+    //
+    let api = API::new(config).await?;
+    api.run().await;
 
-    let client = Client::with_options(client_options)?;
-    let response = client
-        .database("admin")
-        .run_command(doc! { "ping": 1}, None)
-        .await?;
-
-    log::info!("successfully pinged database! - {}", response);
-
-    let hello = warp::path!("hello" / String).map(|name| format!("Hello, {}!", name));
-
-    warp::serve(hello).run((config.socket_address, config.socket_port)).await;
     Ok(())
 }
