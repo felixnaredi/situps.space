@@ -9,6 +9,16 @@ export type UnboundedYearDayOffset = {
   readonly dayOffset: number;
 };
 
+export enum Weekday {
+  SUNDAY = 0,
+  MONDAY,
+  TUESDAY,
+  WEDNESDAY,
+  THURDAY,
+  FRIDAY,
+  SATURDAY,
+}
+
 export class ScheduleDate {
   private _year: number;
   private _dayOffset: number;
@@ -57,6 +67,36 @@ export class ScheduleDate {
     return this._dayOffset - offset[this.month - 1] + 1;
   }
 
+  /**
+   * The weekday of the date.
+   *
+   * Sakamotos method.
+   */
+  public get weekday(): Weekday {
+    const t = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4];
+    const d = this.day;
+    const m = this.month;
+    const y = this.year - (m < 3 ? 1 : 0);
+    return (
+      (y +
+        Math.floor(y / 4) -
+        Math.floor(y / 100) +
+        Math.floor(y / 400) +
+        t[m - 1] +
+        d) %
+      7
+    );
+  }
+
+  public get week(): number {
+    return (
+      mod(
+        Math.floor(this.reversedToWeekday(Weekday.MONDAY).dayOffset / 7),
+        52
+      ) + 1
+    );
+  }
+
   public get isLeapYear(): boolean {
     return isLeapYear(this._year);
   }
@@ -67,6 +107,13 @@ export class ScheduleDate {
     } else {
       return this._year < other._year;
     }
+  }
+
+  public reversedToWeekday(weekday: Weekday): ScheduleDate {
+    return new ScheduleDate(
+      this._year,
+      this._dayOffset - mod(this.weekday - weekday, 7)
+    );
   }
 }
 
@@ -80,4 +127,8 @@ const OFFSET_TO_MONTH_LEAP_YEAR: Array<number> = [
 
 function isLeapYear(year: number): boolean {
   return year % 4 == 0 && (year % 400 == 0 || year % 100 != 0);
+}
+
+function mod(x: number, m: number): number {
+  return ((x % m) + m) % m;
 }

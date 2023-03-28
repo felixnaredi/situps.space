@@ -4,7 +4,7 @@ import { User } from "../interface/user";
 import UserDayInput from "./UserDayInput.vue";
 import { ScheduleDate } from "../model/schedule-date"
 
-defineProps<{ scheduleDate: ScheduleDate }>();
+defineProps<{ date: ScheduleDate }>();
 
 let users: Ref<User[]> = ref([])
 
@@ -22,9 +22,9 @@ function displayScheduleDate(date: ScheduleDate) {
 <template>
   <div class="w-40">
     <div class="flex justify-center bg-slate-700">
-      <h2 class="text-gray-200">{{ displayScheduleDate(scheduleDate) }}</h2>
+      <h2 class="text-gray-200">{{ displayScheduleDate(date) }}</h2>
     </div>
-    <user-day-input v-for="user in users" :key="user.userID" :user="user" :schedule-date="scheduleDate">
+    <user-day-input v-for="user in users" :key="user.userID" :user="user" :schedule-date="date">
     </user-day-input>
   </div>
 </template>

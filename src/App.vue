@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import Grid from "./components/Grid.vue";
+import WeekRow from "./components/WeekRow.vue";
 import { ScheduleDate } from "./model/schedule-date";
 import { useEntriesStore } from "./store/entries-store";
 
 useEntriesStore().setScheduleDateRange(
   ScheduleDate.fromGregorian({
     year: 2023,
-    month: 2,
-    day: 27
+    month: 3,
+    day: 20
   }),
   ScheduleDate.fromGregorian({
     year: 2023,
-    month: 3,
-    day: 26
+    month: 4,
+    day: 9
   })
 )
+
+const weeks = useEntriesStore().weeks;
 
 </script>
 
 <template>
   <div class="flex justify-center">
-    <h1 class="mt-2 text-white text-2xl underline">Situps</h1>
+    <h1 class="mt-4 text-white text-2xl underline">Situps</h1>
   </div>
-  <grid></grid>
+  <week-row v-for="week in weeks" :key="week[0].week" :dates="week" class="m-8"></week-row>
 </template>
-
-<style scoped></style>
