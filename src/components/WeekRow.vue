@@ -2,25 +2,25 @@
 
 import { ScheduleDate } from '../model/schedule-date';
 import DayCard from "./DayCard.vue";
-import { Ref, ref, onMounted, ComponentPublicInstance } from "vue";
+import { Ref, ref, onMounted } from "vue";
 
-const date = ScheduleDate.fromGregorian({
-    day: 1,
-    month: 1,
-    year: 2021,
-});
+defineProps<{ dates: ScheduleDate[] }>();
 
 const separatorWidth = ref(0);
 const dayCardContainer: Ref<null | HTMLElement> = ref(null);
 
 const resizeObserver = new ResizeObserver(() => {
+    //
+    // Set the width of the border that separates `WeekRow`s based on the position of the right
+    // corner of the rightmost card.
+    //
     if (dayCardContainer.value != null) {
-        let maxX = 0;
-        dayCardContainer.value.childNodes.forEach((node) => {
-            const child = node as HTMLElement;
-            maxX = Math.max(child.offsetLeft + child.clientWidth, maxX);
-        });
-        separatorWidth.value = maxX - dayCardContainer.value.offsetLeft;
+        let x = 0;
+        for (const element of dayCardContainer.value.children) {
+            const child = element as HTMLElement;
+            x = Math.max(child.offsetLeft + child.clientWidth, x);
+        };
+        separatorWidth.value = x - dayCardContainer.value.offsetLeft;
     }
 });
 
@@ -34,15 +34,9 @@ onMounted(() => {
 <template>
     <div>
         <div class="pt-4 border-t-solid border-t-2 border-t-orange-400" :style="{ width: separatorWidth + 'px' }"></div>
-        <h2 class="text-slate-200 text-xl mb-4">{{ date.week }}</h2>
-        <div class="flex flex-wrap justify-stretch" ref="dayCardContainer">
-            <day-card :scheduleDate="date" class="mb-6 mr-8"></day-card>
-            <day-card :scheduleDate="date" class="mb-6 mr-8"></day-card>
-            <day-card :scheduleDate="date" class="mb-6 mr-8"></day-card>
-            <day-card :scheduleDate="date" class="mb-6 mr-8"></day-card>
-            <day-card :scheduleDate="date" class="mb-6 mr-8"></day-card>
-            <day-card :scheduleDate="date" class="mb-6 mr-8"></day-card>
-            <day-card :scheduleDate="date" class="mb-6 mr-8"></day-card>
+        <h2 class="text-slate-200 text-xl mb-4">{{ dates[0].week }}</h2>
+        <div ref="dayCardContainer" class="flex flex-wrap justify-stretch">
+            <day-card v-for="date in dates" :key="date.dayOffset" :date="date" class="mb-6 mr-8" />
         </div>
     </div>
 </template>
