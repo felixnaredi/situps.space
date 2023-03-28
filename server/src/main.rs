@@ -26,6 +26,8 @@ struct Config
 {
     database_url: String,
     database: String,
+    socket_address: [u8; 4],
+    socket_port: u16,
 }
 
 #[tokio::main]
@@ -59,6 +61,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>
 
     let hello = warp::path!("hello" / String).map(|name| format!("Hello, {}!", name));
 
-    warp::serve(hello).run(([127, 0, 0, 1], 3030)).await;
+    warp::serve(hello).run((config.socket_address, config.socket_port)).await;
     Ok(())
 }

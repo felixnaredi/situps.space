@@ -1,0 +1,6 @@
+{
+    "database_url": "mongodb://localhost:27017",
+    "database": "development",
+    "socket_address": [127, 0, 0, 1],
+    "socket_port": 3030
+}
