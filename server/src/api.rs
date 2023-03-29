@@ -44,7 +44,7 @@ use crate::{
     entry_event::{
         self,
         request,
-        Request, Response,
+        Request,
     },
     schemes::User,
 };
@@ -58,8 +58,12 @@ pub struct Config
     socket_port: u16,
 }
 
-type ConnectedUsers = Arc<RwLock<HashMap<SocketAddr, mpsc::UnboundedSender<entry_event::Request>>>>;
+type ConnectedClients =
+    Arc<RwLock<HashMap<SocketAddr, mpsc::UnboundedSender<entry_event::Broadcast>>>>;
 
+///
+/// Launches an API.
+///
 pub async fn serve(config: &Config) -> Result<(), Box<dyn std::error::Error>>
 {
     let client = initialize_database(config).await?;
@@ -122,6 +126,12 @@ pub async fn serve(config: &Config) -> Result<(), Box<dyn std::error::Error>>
         .await)
 }
 
+///
+/// Initializese the database.
+///
+/// ## NOTE
+/// The database is not a singleton. Each call to this function established a new client.
+///
 async fn initialize_database(config: &Config) -> Result<Client, Box<dyn std::error::Error>>
 {
     let mut client_options = ClientOptions::parse(&config.database_url).await?;
@@ -130,13 +140,18 @@ async fn initialize_database(config: &Config) -> Result<Client, Box<dyn std::err
     Ok(Client::with_options(client_options)?)
 }
 
+///
+/// Sets up all required connections needed to handle a /entry WebSocket.
+///
 async fn handle_entry_websocket(
     websocket: WebSocket,
     addr: SocketAddr,
     db: Arc<Database>,
-    connected_clients: ConnectedUsers,
+    connected_clients: ConnectedClients,
 )
 {
+    use entry_event::Response;
+
     let (user_ws_tx, mut user_ws_rx) = websocket.split();
 
     let user_ws_tx = Arc::new(RwLock::new(user_ws_tx));
@@ -161,34 +176,28 @@ async fn handle_entry_websocket(
     {
         let user_ws_tx = user_ws_tx.clone();
 
-        tokio::task::spawn({
-            let db = db.clone();
-            async move {
-                let mut rx = UnboundedReceiverStream::new(rx);
+        tokio::task::spawn(async move {
+            use entry_event::{
+                Broadcast,
+                Response,
+            };
 
-                while let Some(request) = rx.next().await {
-                    log::debug!("{:?} - parsed request: {:?}", addr, request);
+            let mut rx = UnboundedReceiverStream::new(rx);
 
-                    match request {
-                        //
-                        // Respond to another clients `GetEntryData` request.
-                        //
-                        entry_event::Request::GetEntryData(_) => {}
+            while let Some(request) = rx.next().await {
+                log::debug!("{:?} - parsed request: {:?}", addr, request);
 
-                        //
-                        // Respond to another clients `Update` request.
-                        //
-                        entry_event::Request::Update() => {
-                            user_ws_tx
-                                .write()
-                                .await
-                                .send(Message::text(
-                                    serde_json::to_string(&entry_event::Response::Update())
-                                        .unwrap(),
-                                ))
-                                .await
-                                .unwrap();
-                        }
+                match request {
+                    //
+                    // Respond to broadcast `Update` event.
+                    //
+                    Broadcast::UpdateEntry(entry) => {
+                        user_ws_tx
+                            .write()
+                            .await
+                            .send(entry_event::Response::update_entry(entry.clone()))
+                            .await
+                            .unwrap();
                     }
                 }
             }
@@ -199,7 +208,9 @@ async fn handle_entry_websocket(
     // Receive messages from the newly connected client.
     //
     while let Some(result) = user_ws_rx.next().await {
-        let request = match result.map(parse_request) {
+        log::debug!("received request: {:?}", result);
+
+        let request = match parse_raw_request(result) {
             Ok(request) => request,
             Err(error) => {
                 log::error!("websocket error: addr: {:?} - {:?}", addr, error);
@@ -209,6 +220,7 @@ async fn handle_entry_websocket(
 
         log::debug!("processing request {:?}", request);
 
+        use entry_event::Broadcast;
         use entry_event::Request::*;
 
         //
@@ -229,10 +241,13 @@ async fn handle_entry_websocket(
                     .unwrap();
             }
 
-            //
+            //j
             // Respond to clients `Update` request.
             //
-            Update() => notify_connected_clients(&connected_clients, request).await,
+            UpdateEntry(data) => {
+                notify_connected_clients(&connected_clients, Broadcast::UpdateEntry(data.entry))
+                    .await
+            }
         }
     }
 
@@ -241,19 +256,27 @@ async fn handle_entry_websocket(
 }
 
 ///
+/// A raw request might not even have a `&str` in its message.
+///
+fn parse_raw_request<E: std::error::Error + 'static>(
+    msg: Result<Message, E>,
+) -> Result<Request, Box<dyn std::error::Error>>
+{
+    parse_request(msg?.to_str().map_err(|e| format!("{:?}", e))?)
+}
+
+///
 /// Parse request.
 ///
-fn parse_request(msg: Message) -> Request
+fn parse_request(msg: &str) -> Result<Request, Box<dyn std::error::Error>>
 {
-    // TODO:
-    //   `msg.to_str().unwrap()` should be handled better.
-    serde_json::from_str(msg.to_str().unwrap()).unwrap()
+    Ok(serde_json::from_str(msg)?)
 }
 
 ///
 /// Update all connected clients of the event.
 ///
-async fn notify_connected_clients(clients: &ConnectedUsers, msg: entry_event::Request)
+async fn notify_connected_clients(clients: &ConnectedClients, msg: entry_event::Broadcast)
 {
     for tx in clients.read().await.values() {
         tx.send(msg.clone()).unwrap();

@@ -22,6 +22,7 @@ const weeks = useEntriesStore().weeks;
 const socket = new WebSocket("ws://127.0.0.1:3030/entry");
 socket.addEventListener("open", event => {
   console.log(event);
+
   socket.send(JSON.stringify({
     getEntryData: {
       entryKey: {
@@ -34,6 +35,24 @@ socket.addEventListener("open", event => {
       }
     }
   }));
+
+  socket.send(JSON.stringify({
+    updateEntry: {
+      entry: {
+        _id: {
+          userId: "bob",
+          scheduleDate: {
+            year: 2023,
+            month: 3,
+            day: 20
+          }
+        },
+        value: {
+          amount: 1,
+        }
+      }
+    }
+  }))
 });
 socket.addEventListener("message", console.log);
 
