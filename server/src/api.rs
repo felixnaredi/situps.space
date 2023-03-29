@@ -230,10 +230,7 @@ async fn handle_entry_websocket(
                 user_ws_tx
                     .write()
                     .await
-                    .send(Response::get_entry_data(
-                        data.entry_key,
-                        entry_data,
-                    ))
+                    .send(Response::get_entry_data(data.entry_key, entry_data))
                     .await
                     .unwrap();
             }
@@ -242,6 +239,7 @@ async fn handle_entry_websocket(
             // Respond to clients `Update` request.
             //
             UpdateEntry(data) => {
+                db::update_entry(&db, &data.entry).await.unwrap();
                 notify_connected_clients(&connected_clients, Broadcast::UpdateEntry(data.entry))
                     .await
             }

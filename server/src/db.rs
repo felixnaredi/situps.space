@@ -1,3 +1,4 @@
+use chrono::Utc;
 use futures::TryStreamExt;
 use mongodb::{
     bson,
@@ -5,13 +6,16 @@ use mongodb::{
     options::{
         FindOneOptions,
         FindOptions,
+        UpdateOptions,
     },
     Database,
 };
 
 use crate::schemes::{
+    Entry,
     EntryData,
     EntryKey,
+    UpdateEntryCommit,
     User,
 };
 
@@ -46,4 +50,39 @@ pub async fn get_entry_data(
                 .build(),
         )
         .await?)
+}
+
+pub async fn update_entry(db: &Database, entry: &Entry) -> Result<(), Box<dyn std::error::Error>>
+{
+    log::debug!("update entry - {:?}", entry);
+
+    //
+    // Log commit.
+    //
+    db.collection::<UpdateEntryCommit>("updateEntryCommits")
+        .insert_one(
+            UpdateEntryCommit {
+                date: Utc::now(),
+                data: entry.clone(),
+            },
+            None,
+        )
+        .await?;
+
+    //
+    // Update database.
+    //
+    db.collection::<Entry>("entries")
+        .update_one(
+            doc! {
+                "_id": bson::to_bson(&entry.id).unwrap(),
+            },
+            doc! {
+                "$set": { "amount": &entry.value.amount },
+            },
+            UpdateOptions::builder().upsert(true).build(),
+        )
+        .await?;
+
+    Ok(())
 }

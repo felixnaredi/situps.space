@@ -1,3 +1,7 @@
+use chrono::{
+    DateTime,
+    Utc,
+};
 use serde::{
     Deserialize,
     Serialize,
@@ -18,9 +22,8 @@ pub struct GregorianScheduleDate
 #[serde(rename_all = "camelCase")]
 pub struct EntryKey
 {
-    #[serde(rename = "userId")]
-    id: UserID,
-    schedule_date: GregorianScheduleDate,
+    pub user_id: UserID,
+    pub schedule_date: GregorianScheduleDate,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
@@ -35,8 +38,8 @@ pub struct EntryData
 pub struct Entry
 {
     #[serde(rename = "_id")]
-    id: EntryKey,
-    value: EntryData,
+    pub id: EntryKey,
+    pub value: EntryData,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
@@ -47,4 +50,12 @@ pub struct User
     id: UserID,
     display_name: String,
     theme: String,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateEntryCommit
+{
+    pub date: DateTime<Utc>,
+    pub data: Entry,
 }
