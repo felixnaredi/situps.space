@@ -1,0 +1,24 @@
+// MongoDB Playground
+// Use Ctrl+Space inside a snippet or a string literal to trigger completions.
+
+// The current database to use.
+use("production");
+
+// Search for documents in the current collection.
+db.entries.aggregate(
+  {
+    $match: {
+      "_id.userID": { $exists: true },
+    },
+  },
+  {
+    $project: {
+      _id: {
+        userId: "$_id.userID",
+        scheduleDate: "$_id.scheduleDate",
+      },
+      amount: 1,
+    },
+  },
+  { $out: "entries" }
+);
