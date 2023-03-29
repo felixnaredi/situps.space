@@ -30,15 +30,6 @@ useEntriesStore().getEntry(entryKey.value, (response) => {
   }
 });
 
-async function updateAmount(event: Event) {
-  const value = (event.target! as HTMLInputElement).value;
-  if (value == "") {
-    useEntriesStore().updateEntry(entryKey.value, null);
-  } else {
-    useEntriesStore().updateEntry(entryKey.value, Number(value));
-  }
-}
-
 //
 // Subscribe to changes of the entry.
 //
@@ -54,13 +45,23 @@ useEntriesStore().subscribeToStateChange(entryKey.value, (message) => {
   }
 });
 
+async function updateAmount(event: Event) {
+  const value = (event.target! as HTMLInputElement).value;
+  if (value == "") {
+    useEntriesStore().updateEntry(entryKey.value, null);
+  } else {
+    useEntriesStore().updateEntry(entryKey.value, Number(value));
+  }
+}
+
+
 </script>
 
 <template>
   <!-- 
-    TODO:
-      Theme styles should be resolved in another file.
-  -->
+        TODO:
+          Theme styles should be resolved in another file.
+      -->
   <div class="border-t-2 border-solid border-stone-700" :class="{
     'bg-sky-200': user.theme == 'ocean' && amount == null,
     'bg-sky-500': user.theme == 'ocean' && amount != null,

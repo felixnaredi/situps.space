@@ -5,11 +5,8 @@ use std::{
 };
 
 use futures::{
-    channel::mpsc::UnboundedReceiver,
-    Sink,
     SinkExt,
     StreamExt,
-    TryStreamExt,
 };
 use mongodb::{
     bson::doc,
@@ -36,17 +33,14 @@ use warp::{
         WebSocket,
     },
     Filter,
-    Future,
 };
 
 use crate::{
     db,
     entry_event::{
         self,
-        request,
         Request,
     },
-    schemes::User,
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -177,13 +171,13 @@ async fn handle_entry_websocket(
         let user_ws_tx = user_ws_tx.clone();
 
         tokio::task::spawn(async move {
-            use entry_event::{
-                Broadcast,
-                Response,
-            };
+            use entry_event::Broadcast;
 
             let mut rx = UnboundedReceiverStream::new(rx);
 
+            //
+            // Listen to broadcast events.
+            //
             while let Some(request) = rx.next().await {
                 log::debug!("{:?} - parsed request: {:?}", addr, request);
 
@@ -195,7 +189,7 @@ async fn handle_entry_websocket(
                         user_ws_tx
                             .write()
                             .await
-                            .send(entry_event::Response::update_entry(entry.clone()))
+                            .send(Response::update_entry(entry.clone()))
                             .await
                             .unwrap();
                     }
@@ -205,7 +199,7 @@ async fn handle_entry_websocket(
     };
 
     //
-    // Receive messages from the newly connected client.
+    // Receive request from the newly connected client.
     //
     while let Some(result) = user_ws_rx.next().await {
         log::debug!("received request: {:?}", result);
@@ -236,7 +230,10 @@ async fn handle_entry_websocket(
                 user_ws_tx
                     .write()
                     .await
-                    .send(entry_event::Response::get_entry_data(entry_data))
+                    .send(Response::get_entry_data(
+                        data.entry_key,
+                        entry_data,
+                    ))
                     .await
                     .unwrap();
             }

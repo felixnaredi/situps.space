@@ -11,11 +11,11 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         "/api": {
-          target: env.SITUPS_API_V2_URL,
+          target: env.SITUPS_V2_API_URL,
           changeOrigin: true,
         },
         "/socket.io": {
-          target: env.SITUPS_API_URL,
+          target: env.SITUPS_V1_WS_URL,
           changeOrigin: true,
           ws: true,
           rewrite: (path) => path.replace("/socket.io", ""),

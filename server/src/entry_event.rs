@@ -7,6 +7,7 @@ use warp::ws::Message;
 use crate::schemes::{
     Entry,
     EntryData,
+    EntryKey,
 };
 
 pub mod request
@@ -39,20 +40,22 @@ pub enum Request
 
 pub mod response
 {
+    use crate::schemes::EntryKey;
+
     use super::*;
 
     #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
     #[serde(rename_all = "camelCase")]
-    pub struct GetEntryData
-    {
-        entry_data: Option<EntryData>,
+    pub struct GetEntryData {
+        entry_key: EntryKey, 
+        entry_data: Option<EntryData>
     }
 
     impl GetEntryData
     {
-        pub fn new(entry_data: Option<EntryData>) -> GetEntryData
+        pub fn new(entry_key: EntryKey, entry_data: Option<EntryData>) -> GetEntryData
         {
-            GetEntryData { entry_data }
+            GetEntryData { entry_key, entry_data }
         }
     }
 
@@ -85,10 +88,11 @@ impl Response
         Message::text(serde_json::to_string(&Response::ConnectionEstablished).unwrap())
     }
 
-    pub fn get_entry_data(entry_data: Option<EntryData>) -> Message
+    pub fn get_entry_data(entry_key: EntryKey, entry_data: Option<EntryData>) -> Message
     {
         Message::text(
             serde_json::to_string(&Response::GetEntryData(response::GetEntryData::new(
+                entry_key,
                 entry_data,
             )))
             .unwrap(),
@@ -103,11 +107,6 @@ impl Response
         )
     }
 }
-
-use std::{
-    collections::HashMap,
-    net::SocketAddr,
-};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase")]
