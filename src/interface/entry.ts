@@ -2,7 +2,7 @@
  * Key used to identify an entry on the server and frontend.
  */
 export type EntryKey = {
-  readonly userID: string;
+  readonly userId: string;
   readonly scheduleDate: {
     readonly year: number;
     readonly month: number;

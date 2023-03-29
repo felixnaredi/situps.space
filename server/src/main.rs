@@ -1,6 +1,6 @@
 mod api;
-mod db;
 mod schemes;
+mod request;
 
 use std::{
     env,
@@ -11,7 +11,6 @@ use simplelog::SimpleLogger;
 
 use crate::api::{
     Config,
-    API,
 };
 
 #[tokio::main]
@@ -35,8 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>
     //
     // Run API.
     //
-    let api = API::new(config).await?;
-    api.run().await;
+    api::serve(&config).await?;
 
     Ok(())
 }

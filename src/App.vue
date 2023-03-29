@@ -18,6 +18,13 @@ useEntriesStore().setScheduleDateRange(
 
 const weeks = useEntriesStore().weeks;
 
+const socket = new WebSocket("ws://127.0.0.1:3030/entry");
+socket.addEventListener("open", event => {
+  console.log(event);
+  socket.send("boop");
+});
+socket.addEventListener("message", console.log);
+
 </script>
 
 <template>

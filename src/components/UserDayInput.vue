@@ -10,7 +10,7 @@ const amount: Ref<null | number> = ref(null);
 
 const entryKey = computed(() => {
   return {
-    userID: props.user.userID, scheduleDate: {
+    userId: props.user._id, scheduleDate: {
       year: props.scheduleDate.year,
       month: props.scheduleDate.month,
       day: props.scheduleDate.day,

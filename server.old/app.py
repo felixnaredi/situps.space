@@ -60,7 +60,7 @@ logging.info("established connection with database")
 
 @app.route("/api/users", methods=["GET"])
 def route_users():
-    return list(db["users"].find({}, {"userID": "$_id", "displayName": 1, "theme": 1}))
+    return list(db["users"].find({}, {"userId": "$_id", "displayName": 1, "theme": 1}))
 
 
 # TODO:
@@ -131,11 +131,11 @@ class EntryKey:
     @staticmethod
     def from_json(obj: Dict) -> EntryKey:
         return EntryKey(
-            try_str(obj["userID"]), ScheduleDate.from_json(obj["scheduleDate"])
+            try_str(obj["userId"]), ScheduleDate.from_json(obj["scheduleDate"])
         )
 
     def json(self) -> Dict:
-        return {"userID": self.user_id, "scheduleDate": self.schedule_date.json()}
+        return {"userId": self.user_id, "scheduleDate": self.schedule_date.json()}
 
 
 class EntryData:
