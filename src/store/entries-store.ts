@@ -160,7 +160,7 @@ function connect(): Promise<WebSocket> {
   // Create socket under the namespace "/entry".
   //
   return new Promise((resolve, reject) => {
-    const socket = new WebSocket(`${import.meta.env.SITUPS_V2_WS_URL}/entry`);
+    const socket = new WebSocket(`${import.meta.env.SITUPS_WS_URL}/entry`);
     socket.addEventListener("open", (event) => {
       console.log(event);
       resolve(socket);
