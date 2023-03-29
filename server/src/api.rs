@@ -41,7 +41,11 @@ use warp::{
 
 use crate::{
     db,
-    entry_event,
+    entry_event::{
+        self,
+        request,
+        Request, Response,
+    },
     schemes::User,
 };
 
@@ -54,7 +58,7 @@ pub struct Config
     socket_port: u16,
 }
 
-type ConnectedUsers = Arc<RwLock<HashMap<SocketAddr, mpsc::UnboundedSender<Message>>>>;
+type ConnectedUsers = Arc<RwLock<HashMap<SocketAddr, mpsc::UnboundedSender<entry_event::Request>>>>;
 
 pub async fn serve(config: &Config) -> Result<(), Box<dyn std::error::Error>>
 {
@@ -130,70 +134,128 @@ async fn handle_entry_websocket(
     websocket: WebSocket,
     addr: SocketAddr,
     db: Arc<Database>,
-    connected_users: ConnectedUsers,
+    connected_clients: ConnectedUsers,
 )
 {
-    let (mut user_ws_tx, mut user_ws_rx) = websocket.split();
+    let (user_ws_tx, mut user_ws_rx) = websocket.split();
+
+    let user_ws_tx = Arc::new(RwLock::new(user_ws_tx));
+
+    user_ws_tx
+        .write()
+        .await
+        .send(Response::connection_established())
+        .await
+        .unwrap();
 
     //
-    // Create user id and add receiving channel to `connected_users`.
+    // Create broadcast channel for the connected client. Add it to the hash map of connected
+    // clients.
     //
     let (tx, rx) = mpsc::unbounded_channel();
-    connected_users.write().await.insert(addr, tx);
+    connected_clients.write().await.insert(addr, tx);
 
-    let mut rx = UnboundedReceiverStream::new(rx);
-    tokio::task::spawn({
-        let db = db.clone();
-        async move {
-            user_ws_tx
-                .send(Message::text("established connection with server"))
-                .await
-                .unwrap();
-            while let Some(message) = rx.next().await {
-                log::debug!("{:?} - received message: {:?}", addr, message);
+    //
+    // Spawn thread for the broadcast channel listener.
+    //
+    {
+        let user_ws_tx = user_ws_tx.clone();
 
-                let request: entry_event::Request =
-                    serde_json::from_str(message.to_str().unwrap()).unwrap();
-                log::debug!("{:?} - parsed request: {:?}", addr, request);
+        tokio::task::spawn({
+            let db = db.clone();
+            async move {
+                let mut rx = UnboundedReceiverStream::new(rx);
 
-                match request {
-                    entry_event::Request::Get(data) => {
-                        let entry_data = db::get_entry_data(&db, &data.entry_key).await.unwrap();
-                        log::debug!("entry_data: {:?}", entry_data);
-                        user_ws_tx
-                            .send(Message::text(
-                                serde_json::to_string(&entry_event::Response::get(entry_data))
-                                    .unwrap(),
-                            ))
-                            .await
-                            .unwrap();
-                    }
-                    entry_event::Request::Update() => {
-                        user_ws_tx
-                            .send(Message::text(
-                                serde_json::to_string(&entry_event::Response::Update()).unwrap(),
-                            ))
-                            .await
-                            .unwrap();
+                while let Some(request) = rx.next().await {
+                    log::debug!("{:?} - parsed request: {:?}", addr, request);
+
+                    match request {
+                        //
+                        // Respond to another clients `GetEntryData` request.
+                        //
+                        entry_event::Request::GetEntryData(_) => {}
+
+                        //
+                        // Respond to another clients `Update` request.
+                        //
+                        entry_event::Request::Update() => {
+                            user_ws_tx
+                                .write()
+                                .await
+                                .send(Message::text(
+                                    serde_json::to_string(&entry_event::Response::Update())
+                                        .unwrap(),
+                                ))
+                                .await
+                                .unwrap();
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+    };
 
+    //
+    // Receive messages from the newly connected client.
+    //
     while let Some(result) = user_ws_rx.next().await {
-        let msg = match result {
-            Ok(msg) => msg,
+        let request = match result.map(parse_request) {
+            Ok(request) => request,
             Err(error) => {
                 log::error!("websocket error: addr: {:?} - {:?}", addr, error);
                 break;
             }
         };
-        for tx in connected_users.read().await.values() {
-            tx.send(msg.clone()).unwrap();
+
+        log::debug!("processing request {:?}", request);
+
+        use entry_event::Request::*;
+
+        //
+        // Request handler.
+        //
+        match request {
+            //
+            // Respond to clients `GetEntryData` request.
+            //
+            GetEntryData(data) => {
+                let entry_data = db::get_entry_data(&db, &data.entry_key).await.unwrap();
+                log::debug!("entry_data: {:?}", entry_data);
+                user_ws_tx
+                    .write()
+                    .await
+                    .send(entry_event::Response::get_entry_data(entry_data))
+                    .await
+                    .unwrap();
+            }
+
+            //
+            // Respond to clients `Update` request.
+            //
+            Update() => notify_connected_clients(&connected_clients, request).await,
         }
     }
 
     log::info!("{:?} disconnected", addr);
-    connected_users.write().await.remove(&addr);
+    connected_clients.write().await.remove(&addr);
+}
+
+///
+/// Parse request.
+///
+fn parse_request(msg: Message) -> Request
+{
+    // TODO:
+    //   `msg.to_str().unwrap()` should be handled better.
+    serde_json::from_str(msg.to_str().unwrap()).unwrap()
+}
+
+///
+/// Update all connected clients of the event.
+///
+async fn notify_connected_clients(clients: &ConnectedUsers, msg: entry_event::Request)
+{
+    for tx in clients.read().await.values() {
+        tx.send(msg.clone()).unwrap();
+    }
 }

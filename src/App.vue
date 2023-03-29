@@ -23,7 +23,7 @@ const socket = new WebSocket("ws://127.0.0.1:3030/entry");
 socket.addEventListener("open", event => {
   console.log(event);
   socket.send(JSON.stringify({
-    get: {
+    getEntryData: {
       entryKey: {
         userId: "bob",
         scheduleDate: {

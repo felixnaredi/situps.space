@@ -2,6 +2,7 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use warp::ws::Message;
 
 use crate::schemes::EntryData;
 
@@ -10,19 +11,19 @@ pub mod request
     use super::*;
     use crate::schemes::EntryKey;
 
-    #[derive(Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+    #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
     #[serde(rename_all = "camelCase")]
-    pub struct Get
+    pub struct GetEntryData
     {
         pub entry_key: EntryKey,
     }
 }
 
-#[derive(Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Request
 {
-    Get(request::Get),
+    GetEntryData(request::GetEntryData),
     Update(),
 }
 
@@ -32,14 +33,16 @@ pub mod response
 
     #[derive(Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
     #[serde(rename_all = "camelCase")]
-    pub struct Get
+    pub struct GetEntryData
     {
         entry_data: Option<EntryData>,
     }
 
-    impl Get {
-        pub fn new(entry_data: Option<EntryData>) -> Get {
-            Get { entry_data }
+    impl GetEntryData
+    {
+        pub fn new(entry_data: Option<EntryData>) -> GetEntryData
+        {
+            GetEntryData { entry_data }
         }
     }
 }
@@ -48,12 +51,22 @@ pub mod response
 #[serde(rename_all = "camelCase")]
 pub enum Response
 {
-    Get(response::Get),
+    ConnectionEstablished,
+    GetEntryData(response::GetEntryData),
     Update(),
 }
 
-impl Response {
-    pub fn get(entry_data: Option<EntryData>) -> Response {
-        Response::Get(response::Get::new(entry_data))
+impl Response
+{
+    pub fn connection_established() -> Message {
+        Message::text(serde_json::to_string(&Response::ConnectionEstablished).unwrap()
+        )
+    }
+
+    pub fn get_entry_data(entry_data: Option<EntryData>) -> Message
+    {
+        Message::text(
+            serde_json::to_string(&Response::GetEntryData(response::GetEntryData::new(entry_data))).unwrap(),
+        )
     }
 }
