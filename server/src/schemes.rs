@@ -27,7 +27,7 @@ pub struct EntryKey
 #[serde(rename_all = "camelCase")]
 pub struct EntryData
 {
-    pub amount: u32,
+    pub amount: Option<u32>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]

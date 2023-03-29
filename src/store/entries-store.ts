@@ -17,20 +17,34 @@ export const useEntriesStore = defineStore("entries", () => {
     undefined | ((event: EntryEventGetResponse) => void)
   > = {};
 
+  const stateChangeListeners: Record<
+    string,
+    (message: EntryEventStateChange) => void
+  > = {};
+
   const socket = connect();
   socket.then((socket) => {
     socket.addEventListener("message", (message) => {
       const response = JSON.parse(message.data);
 
+      console.log(response);
+
       if (response.getEntryData) {
         const r: EntryEventGetResponse = response.getEntryData;
-        const key = JSON.stringify(r.entryKey);
+        const key = EntryKeyIdentifier(r.entryKey);
 
         const callback = getEntryDataListeners[key];
         if (callback) {
           getEntryDataListeners[key] = undefined;
           callback(r);
         }
+      } else if (response.updateEntry) {
+        const r: EntryEventStateChange = {
+          entryKey: response.updateEntry._id,
+          oldValue: null,
+          newValue: response.updateEntry.value,
+        };
+        stateChangeListeners[EntryKeyIdentifier(r.entryKey)](r);
       }
     });
   });
@@ -62,7 +76,7 @@ export const useEntriesStore = defineStore("entries", () => {
     entryKey: EntryKey,
     callback: (response: EntryEventGetResponse) => void
   ) {
-    getEntryDataListeners[JSON.stringify(entryKey)] = callback;
+    getEntryDataListeners[EntryKeyIdentifier(entryKey)] = callback;
 
     const s = await socket;
     s.send(
@@ -72,17 +86,24 @@ export const useEntriesStore = defineStore("entries", () => {
     );
   }
 
-  function updateEntry(entryKey: EntryKey, amount: null | number) {
-    // socket.emit("update", { entryKey, newValue: { amount } });
+  async function updateEntry(entryKey: EntryKey, amount: null | number) {
+    const s = await socket;
+    s.send(
+      JSON.stringify({
+        updateEntry: {
+          entry: {
+            _id: {
+              userId: entryKey.userId,
+              scheduleDate: entryKey.scheduleDate,
+            },
+            value: {
+              amount: amount,
+            },
+          },
+        },
+      })
+    );
   }
-
-  // TODO:
-  //   This broadcaster is very simple. Make it more robust or find a third party library for it.
-
-  const stateChangeListeners: Record<
-    string,
-    (message: EntryEventStateChange) => void
-  > = {};
 
   function subscribeToStateChange(
     key: EntryKey,
@@ -90,15 +111,6 @@ export const useEntriesStore = defineStore("entries", () => {
   ) {
     stateChangeListeners[EntryKeyIdentifier(key)] = callback;
   }
-
-  // socket.on("state-changed", (message: EntryEventStateChange) => {
-  //   console.log("state-change", message);
-  //
-  //   const callback = stateChangeListeners[EntryKeyIdentifier(message.entryKey)];
-  //   if (callback != undefined) {
-  //     callback(message);
-  //   }
-  // });
 
   return {
     /**
