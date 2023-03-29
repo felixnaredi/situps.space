@@ -15,14 +15,12 @@ use mongodb::{
     bson::doc,
     options::{
         ClientOptions,
-        FindOptions,
         ServerApi,
         ServerApiVersion,
     },
     Client,
     Database,
 };
-use rand::Rng;
 use serde::{
     Deserialize,
     Serialize,
@@ -31,6 +29,7 @@ use tokio::sync::{
     mpsc,
     RwLock,
 };
+use tokio_stream::wrappers::UnboundedReceiverStream;
 use warp::{
     ws::{
         Message,
@@ -41,11 +40,10 @@ use warp::{
 };
 
 use crate::{
-    api,
+    db,
+    entry_event,
     schemes::User,
 };
-
-use tokio_stream::wrappers::UnboundedReceiverStream;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config
@@ -85,7 +83,7 @@ pub async fn serve(config: &Config) -> Result<(), Box<dyn std::error::Error>>
         move |()| {
             let db = db.clone();
             async move {
-                match get_users_from_db(&db).await {
+                match db::get_users(&db).await {
                     Ok(users) => Ok(warp::reply::json(&users)),
                     Err(error) => {
                         log::error!("{}", error);
@@ -109,7 +107,8 @@ pub async fn serve(config: &Config) -> Result<(), Box<dyn std::error::Error>>
                 let db = db.clone();
                 let connected_users = connected_users.clone();
                 ws.on_upgrade(move |websocket| async move {
-                    handle_entry_websocket(websocket, addr.unwrap(), &db, connected_users).await
+                    handle_entry_websocket(websocket, addr.unwrap(), db.clone(), connected_users)
+                        .await
                 })
             }
         });
@@ -127,26 +126,10 @@ async fn initialize_database(config: &Config) -> Result<Client, Box<dyn std::err
     Ok(Client::with_options(client_options)?)
 }
 
-async fn get_users_from_db(db: &Database) -> Result<Vec<User>, Box<dyn std::error::Error>>
-{
-    let cursor = db
-        .collection::<User>("users")
-        .find(
-            doc! {},
-            FindOptions::builder()
-                .projection(doc! {
-                    "_id": "$_id", "displayName": 1, "theme": 1
-                })
-                .build(),
-        )
-        .await?;
-    Ok(cursor.try_collect::<Vec<_>>().await?)
-}
-
 async fn handle_entry_websocket(
     websocket: WebSocket,
     addr: SocketAddr,
-    db: &Database,
+    db: Arc<Database>,
     connected_users: ConnectedUsers,
 )
 {
@@ -158,25 +141,59 @@ async fn handle_entry_websocket(
     let (tx, rx) = mpsc::unbounded_channel();
     connected_users.write().await.insert(addr, tx);
 
-
     let mut rx = UnboundedReceiverStream::new(rx);
-    tokio::task::spawn(async move {
-        user_ws_tx
-            .send(Message::text("established connection with server"))
-            .await
-            .unwrap();
-        while let Some(message) = rx.next().await {
-            log::debug!("{:?} - received message: {:?}", addr, message);
-            user_ws_tx.send(Message::text("update")).await.unwrap();
+    tokio::task::spawn({
+        let db = db.clone();
+        async move {
+            user_ws_tx
+                .send(Message::text("established connection with server"))
+                .await
+                .unwrap();
+            while let Some(message) = rx.next().await {
+                log::debug!("{:?} - received message: {:?}", addr, message);
+
+                let request: entry_event::Request =
+                    serde_json::from_str(message.to_str().unwrap()).unwrap();
+                log::debug!("{:?} - parsed request: {:?}", addr, request);
+
+                match request {
+                    entry_event::Request::Get(data) => {
+                        let entry_data = db::get_entry_data(&db, &data.entry_key).await.unwrap();
+                        log::debug!("entry_data: {:?}", entry_data);
+                        user_ws_tx
+                            .send(Message::text(
+                                serde_json::to_string(&entry_event::Response::get(entry_data))
+                                    .unwrap(),
+                            ))
+                            .await
+                            .unwrap();
+                    }
+                    entry_event::Request::Update() => {
+                        user_ws_tx
+                            .send(Message::text(
+                                serde_json::to_string(&entry_event::Response::Update()).unwrap(),
+                            ))
+                            .await
+                            .unwrap();
+                    }
+                }
+            }
         }
     });
 
-    while let Some(message) = user_ws_rx.next().await {
-        let message = message.unwrap();
+    while let Some(result) = user_ws_rx.next().await {
+        let msg = match result {
+            Ok(msg) => msg,
+            Err(error) => {
+                log::error!("websocket error: addr: {:?} - {:?}", addr, error);
+                break;
+            }
+        };
         for tx in connected_users.read().await.values() {
-            tx.send(message.clone()).unwrap();
+            tx.send(msg.clone()).unwrap();
         }
     }
 
-    
+    log::info!("{:?} disconnected", addr);
+    connected_users.write().await.remove(&addr);
 }

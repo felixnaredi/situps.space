@@ -1417,7 +1417,6 @@ dependencies = [
  "futures",
  "log",
  "mongodb",
- "rand",
  "serde",
  "serde_json",
  "simplelog",

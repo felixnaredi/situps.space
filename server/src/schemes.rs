@@ -5,7 +5,7 @@ use serde::{
 
 pub type UserID = String;
 
-#[derive(Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GregorianScheduleDate
 {
@@ -14,22 +14,23 @@ pub struct GregorianScheduleDate
     day: u32,
 }
 
-#[derive(Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EntryKey
 {
-    user_id: UserID,
+    #[serde(rename = "userId")]
+    id: UserID,
     schedule_date: GregorianScheduleDate,
 }
 
-#[derive(Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EntryData
 {
-    amount: u32,
+    pub amount: u32,
 }
 
-#[derive(Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Entry
 {
@@ -38,7 +39,7 @@ pub struct Entry
     value: EntryData,
 }
 
-#[derive(Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct User
 {

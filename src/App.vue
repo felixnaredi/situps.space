@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { json } from "body-parser";
 import WeekRow from "./components/WeekRow.vue";
 import { ScheduleDate } from "./model/schedule-date";
 import { useEntriesStore } from "./store/entries-store";
@@ -21,7 +22,18 @@ const weeks = useEntriesStore().weeks;
 const socket = new WebSocket("ws://127.0.0.1:3030/entry");
 socket.addEventListener("open", event => {
   console.log(event);
-  socket.send("boop");
+  socket.send(JSON.stringify({
+    get: {
+      entryKey: {
+        userId: "bob",
+        scheduleDate: {
+          year: 2023,
+          month: 3,
+          day: 20
+        }
+      }
+    }
+  }));
 });
 socket.addEventListener("message", console.log);
 
