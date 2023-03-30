@@ -14,14 +14,8 @@ export default defineConfig(({ mode }) => {
           target: env.SITUPS_API_URL,
           changeOrigin: true,
         },
-        "/socket.io": {
-          target: env.SITUPS_WS_URL,
-          changeOrigin: true,
-          ws: true,
-          rewrite: (path) => path.replace("/socket.io", ""),
-        },
       },
     },
-    envPrefix: "SITUPS"
+    envPrefix: "SITUPS",
   };
 });

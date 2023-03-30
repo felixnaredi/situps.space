@@ -1,5 +1,2 @@
-__pycache__/
-.ipynb_checkpoints/
-env/
-
-.vscode
+target/
+config.*.local.json

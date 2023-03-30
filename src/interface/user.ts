@@ -1,6 +1,6 @@
 
 export interface User {
-  readonly userID: string;
+  readonly _id: string;
   readonly displayName: string;
   readonly theme: string;
 }

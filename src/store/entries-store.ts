@@ -2,7 +2,6 @@ import { defineStore } from "pinia";
 import { ScheduleDate, Weekday } from "../model/schedule-date";
 import { Ref, ref, computed } from "vue";
 import { InclusiveScheduleDateRange } from "../model/schedule-date-range";
-import { io } from "socket.io-client";
 import {
   EntryEventGetResponse,
   EntryEventStateChange,
@@ -13,17 +12,41 @@ import { EntryKey, EntryKeyIdentifier } from "../interface/entry";
  * Store used to keep track of the state of the entries.
  */
 export const useEntriesStore = defineStore("entries", () => {
-  //
-  // Create socket under the namespace "/entry".
-  //
-  const socket = io(`${import.meta.env.SITUPS_WS_URL}/entry`);
+  const getEntryDataListeners: Record<
+    string,
+    undefined | ((event: EntryEventGetResponse) => void)
+  > = {};
 
-  //
-  // Respond to established connection.
-  //
-  socket.on("connect", () => {
-    console.log("`useEntriesStore` connected to web-socket");
-    socket.emit("ack-connect");
+  const stateChangeListeners: Record<
+    string,
+    (message: EntryEventStateChange) => void
+  > = {};
+
+  const socket = connect();
+  socket.then((socket) => {
+    socket.addEventListener("message", (message) => {
+      const response = JSON.parse(message.data);
+
+      console.log(response);
+
+      if (response.getEntryData) {
+        const r: EntryEventGetResponse = response.getEntryData;
+        const key = EntryKeyIdentifier(r.entryKey);
+
+        const callback = getEntryDataListeners[key];
+        if (callback) {
+          getEntryDataListeners[key] = undefined;
+          callback(r);
+        }
+      } else if (response.updateEntry) {
+        const r: EntryEventStateChange = {
+          entryKey: response.updateEntry._id,
+          oldValue: null,
+          newValue: response.updateEntry.value,
+        };
+        stateChangeListeners[EntryKeyIdentifier(r.entryKey)](r);
+      }
+    });
   });
 
   const scheduleDatesRef: Ref<ScheduleDate[]> = ref([]);
@@ -49,24 +72,38 @@ export const useEntriesStore = defineStore("entries", () => {
     );
   }
 
-  function getEntry(
+  async function getEntry(
     entryKey: EntryKey,
     callback: (response: EntryEventGetResponse) => void
   ) {
-    socket.emit("get", { entryKey }, callback);
+    getEntryDataListeners[EntryKeyIdentifier(entryKey)] = callback;
+
+    const s = await socket;
+    s.send(
+      JSON.stringify({
+        getEntryData: { entryKey: entryKey },
+      })
+    );
   }
 
-  function updateEntry(entryKey: EntryKey, amount: null | number) {
-    socket.emit("update", { entryKey, newValue: { amount } });
+  async function updateEntry(entryKey: EntryKey, amount: null | number) {
+    const s = await socket;
+    s.send(
+      JSON.stringify({
+        updateEntry: {
+          entry: {
+            _id: {
+              userId: entryKey.userId,
+              scheduleDate: entryKey.scheduleDate,
+            },
+            value: {
+              amount: amount,
+            },
+          },
+        },
+      })
+    );
   }
-
-  // TODO:
-  //   This broadcaster is very simple. Make it more robust or find a third party library for it.
-
-  const stateChangeListeners: Record<
-    string,
-    (message: EntryEventStateChange) => void
-  > = {};
 
   function subscribeToStateChange(
     key: EntryKey,
@@ -74,15 +111,6 @@ export const useEntriesStore = defineStore("entries", () => {
   ) {
     stateChangeListeners[EntryKeyIdentifier(key)] = callback;
   }
-
-  socket.on("state-changed", (message: EntryEventStateChange) => {
-    console.log("state-change", message);
-
-    const callback = stateChangeListeners[EntryKeyIdentifier(message.entryKey)];
-    if (callback != undefined) {
-      callback(message);
-    }
-  });
 
   return {
     /**
@@ -126,3 +154,16 @@ export const useEntriesStore = defineStore("entries", () => {
     weeks,
   };
 });
+
+function connect(): Promise<WebSocket> {
+  //
+  // Create socket under the namespace "/entry".
+  //
+  return new Promise((resolve, reject) => {
+    const socket = new WebSocket(`${import.meta.env.SITUPS_WS_URL}/entry`);
+    socket.addEventListener("open", (event) => {
+      console.log(event);
+      resolve(socket);
+    });
+  });
+}

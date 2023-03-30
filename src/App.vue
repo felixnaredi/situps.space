@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { json } from "body-parser";
 import WeekRow from "./components/WeekRow.vue";
 import { ScheduleDate } from "./model/schedule-date";
 import { useEntriesStore } from "./store/entries-store";
+import { Ref, ref } from "vue";
+
+const weeks: Ref<Record<number, ScheduleDate[]>> = ref({});
 
 useEntriesStore().setScheduleDateRange(
   ScheduleDate.fromGregorian({
@@ -16,7 +20,7 @@ useEntriesStore().setScheduleDateRange(
   })
 )
 
-const weeks = useEntriesStore().weeks;
+weeks.value = useEntriesStore().weeks;
 
 </script>
 

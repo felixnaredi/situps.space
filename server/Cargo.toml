@@ -1,0 +1,16 @@
+[package]
+name = "situps-space-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = { version = "0.4.24", features = ["serde"] }
+futures = "0.3.27"
+log = "0.4.17"
+mongodb = "2.4.0"
+serde = { version = "1.0.159", features = ["derive"] }
+serde_json = "1.0.95"
+simplelog = "0.12.1"
+tokio = { version = "1.27.0", features = ["full"] }
+tokio-stream = "0.1.12"
+warp = "0.3.3"

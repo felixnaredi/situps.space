@@ -24,7 +24,7 @@ function displayScheduleDate(date: ScheduleDate) {
     <div class="flex justify-center bg-slate-700">
       <h2 class="text-gray-200">{{ displayScheduleDate(date) }}</h2>
     </div>
-    <user-day-input v-for="user in users" :key="user.userID" :user="user" :schedule-date="date">
+    <user-day-input v-for="user in users" :key="user._id" :user="user" :schedule-date="date">
     </user-day-input>
   </div>
 </template>

@@ -2,6 +2,7 @@ import { EntryData, EntryKey } from "./entry";
 
 
 export interface EntryEventGetResponse {
+    readonly entryKey: EntryKey,
     readonly entryData: null | EntryData;
 }
 
