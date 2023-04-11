@@ -64,12 +64,8 @@ export const useEntriesStore = defineStore("entries", () => {
 
   // TODO:
   //   The behavior of the range is a bit quirky and should probably be more robustly defined.
-  function setScheduleDateRange(from: ScheduleDate, to: ScheduleDate) {
-    from = from.reversedToWeekday(Weekday.MONDAY);
-    to = to.reversedToWeekday(Weekday.SUNDAY);
-    scheduleDatesRef.value = Array.from(
-      new InclusiveScheduleDateRange(from, to)
-    );
+  function setScheduleDateRange(range: InclusiveScheduleDateRange) {
+    scheduleDatesRef.value = Array.from(range);
   }
 
   async function getEntry(

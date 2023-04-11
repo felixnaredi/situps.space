@@ -4,21 +4,15 @@ import WeekRow from "./components/WeekRow.vue";
 import { ScheduleDate } from "./model/schedule-date";
 import { useEntriesStore } from "./store/entries-store";
 import { Ref, ref } from "vue";
+import { ScheduleDateRangeWithConfig } from "./model/schedule-date-range-config";
 
 const weeks: Ref<Record<number, ScheduleDate[]>> = ref({});
 
-useEntriesStore().setScheduleDateRange(
-  ScheduleDate.fromGregorian({
-    year: 2023,
-    month: 3,
-    day: 20
-  }),
-  ScheduleDate.fromGregorian({
-    year: 2023,
-    month: 4,
-    day: 9
-  })
-)
+useEntriesStore().setScheduleDateRange(ScheduleDateRangeWithConfig({
+  anchorDate: "now",
+  previousWeeksAmount: 1,
+  upcomingWeeksAmount: 2,
+}))
 
 weeks.value = useEntriesStore().weeks;
 

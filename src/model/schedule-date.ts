@@ -41,6 +41,16 @@ export class ScheduleDate {
     return new ScheduleDate(date.year, offset[date.month - 1] + date.day - 1);
   }
 
+  static fromDate(date: Date): ScheduleDate {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const offset = isLeapYear(year)
+      ? OFFSET_TO_MONTH_LEAP_YEAR
+      : OFFSET_TO_MONTH;
+
+    return new ScheduleDate(date.getFullYear(), offset[month] + date.getDate());
+  }
+
   public get year(): number {
     return this._year;
   }
