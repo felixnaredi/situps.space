@@ -2,7 +2,5 @@
     "database_url": "mongodb://localhost:27017",
     "database": "development",
     "socket_address": [193, 168, 0, 3],
-    "socket_port": 3030,
-    "cert_path": "cert.pem",
-    "key_path": "key.rsa"
+    "socket_port": 3030
 }

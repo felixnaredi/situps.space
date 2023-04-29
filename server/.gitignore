@@ -1,5 +1,4 @@
 target/
 config.*.local.json
 db/
-cert.pem
-key.rsa
+

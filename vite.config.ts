@@ -13,7 +13,6 @@ export default defineConfig(({ mode }) => {
         "/api": {
           target: env.SITUPS_API_URL,
           changeOrigin: true,
-          secure: env.SITUPS_API_PROXY_SECURE === "true"
         },
       },
     },
