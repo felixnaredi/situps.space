@@ -1,43 +1,46 @@
-<mxfile host="app.diagrams.net" modified="2023-04-29T14:22:45.859Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/112.0" etag="MTPVhZiHkrjD8pLJi7X7" version="21.2.1" type="github">
+<mxfile host="app.diagrams.net" modified="2023-04-29T18:09:56.204Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/112.0" etag="-CHxGnF3HYUWNxV-nFck" version="21.2.1" type="github">
   <diagram name="Page-1" id="n51TAnZlxfRUYqPKpPW-">
-    <mxGraphModel dx="877" dy="516" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1075" dy="645" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="_M9vyBiTQRy0ly4204Hm-54" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Request::GetRoomProperties&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;+ roomIdentifier: ClientRoomIdentifier&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;+ dates: [Date] - [] &lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;+ entries: boolean - false&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;+ users: boolean - false&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;+ name: boolean - false&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;+ url: boolean - false&lt;br&gt;&lt;/p&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="330" y="180" width="240" height="130" as="geometry" />
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-54" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Request::GetRoomProperties&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;{ roomIdentifier: ClientRoomIdentifier&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, dates:&amp;nbsp;&amp;nbsp; [Date]?&amp;nbsp; (default: [])&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, entries: boolean? (default: false)&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, users:&amp;nbsp;&amp;nbsp; boolean? (default: false)&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, name:&amp;nbsp;&amp;nbsp;&amp;nbsp; boolean? (default: false)&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, url:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; boolean? (default: false)&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;}&lt;br&gt;&lt;/font&gt;&lt;/div&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="490" y="430" width="350" height="150" as="geometry" />
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-55" value="" style="shape=component;jettyWidth=8;jettyHeight=4;" vertex="1" parent="_M9vyBiTQRy0ly4204Hm-54">
           <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
             <mxPoint x="-24" y="4" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_M9vyBiTQRy0ly4204Hm-56" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Request::ResolveRoom&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;+ url: URL&lt;br&gt;&lt;/p&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="40" y="180" width="200" height="60" as="geometry" />
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-56" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Request::ResolveRoomURL&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;&lt;font face=&quot;Courier New&quot;&gt;{ url: URL }&lt;/font&gt;&lt;br&gt;&lt;/p&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="80" y="340" width="310" height="60" as="geometry" />
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-57" value="" style="shape=component;jettyWidth=8;jettyHeight=4;" vertex="1" parent="_M9vyBiTQRy0ly4204Hm-56">
           <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
             <mxPoint x="-24" y="4" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_M9vyBiTQRy0ly4204Hm-58" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Response::ResolveRoom&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr&gt;&amp;nbsp;+ roomIdentifier: ClientRoomIdentifier?" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="30" y="40" width="230" height="60" as="geometry" />
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-58" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Response::ResolveRoomURL&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;{ roomIdentifier: ClientRoomIdentifier }&lt;/font&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="80" y="230" width="310" height="60" as="geometry" />
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-59" value="" style="shape=component;jettyWidth=8;jettyHeight=4;" vertex="1" parent="_M9vyBiTQRy0ly4204Hm-58">
           <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
             <mxPoint x="-24" y="4" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_M9vyBiTQRy0ly4204Hm-60" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Response::GetRoomProperties&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;+ roomIdentifier: ClientRoomIdentifier&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;+ entries: { Date: [Entry] }?&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;+ users: { Date: [User] }?&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;+ name: String?&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;+ url: URL?&lt;br&gt;&lt;/p&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="350" y="20" width="240" height="120" as="geometry" />
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-66" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="680" y="380" as="sourcePoint" />
+            <mxPoint x="680" y="380" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
-        <mxCell id="_M9vyBiTQRy0ly4204Hm-61" value="" style="shape=component;jettyWidth=8;jettyHeight=4;" vertex="1" parent="_M9vyBiTQRy0ly4204Hm-60">
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-67" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Response::GetRoomProperties&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;{ roomIdentifier: ClientRoomIdentifier&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, entries: { Date: [Entry]? }&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, users:&amp;nbsp;&amp;nbsp; { Date: [User]? }&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, name:&amp;nbsp;&amp;nbsp;&amp;nbsp; String?&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, url:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; URL?&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;}&lt;br&gt;&lt;/font&gt;&lt;/div&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="490" y="230" width="350" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-68" value="" style="shape=component;jettyWidth=8;jettyHeight=4;" vertex="1" parent="_M9vyBiTQRy0ly4204Hm-67">
           <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
             <mxPoint x="-24" y="4" as="offset" />
           </mxGeometry>
-        </mxCell>
-        <mxCell id="_M9vyBiTQRy0ly4204Hm-66" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="_M9vyBiTQRy0ly4204Hm-60" target="_M9vyBiTQRy0ly4204Hm-60">
-          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
