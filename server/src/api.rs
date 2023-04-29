@@ -50,6 +50,8 @@ pub struct Config
     database: String,
     socket_address: [u8; 4],
     socket_port: u16,
+    cert_path: String,
+    key_path: String,
 }
 
 type ConnectedClients =
@@ -116,6 +118,9 @@ pub async fn serve(config: &Config) -> Result<(), Box<dyn std::error::Error>>
         });
 
     Ok(warp::serve(api_users.or(socket_entry))
+        .tls()
+        .cert_path(&config.cert_path)
+        .key_path(&config.key_path)
         .run((config.socket_address, config.socket_port))
         .await)
 }
