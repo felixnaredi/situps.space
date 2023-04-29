@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-04-29T21:20:57.428Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/112.0" etag="bZ6i_yEG2IkwK050qLVx" version="21.2.1" type="github">
+<mxfile host="app.diagrams.net" modified="2023-04-29T21:22:41.154Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/112.0" etag="joQrJ0tkPRJXPmKkZJcD" version="21.2.1" type="github">
   <diagram name="Page-1" id="n51TAnZlxfRUYqPKpPW-">
     <mxGraphModel dx="1147" dy="688" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -42,6 +42,9 @@
             </Array>
           </mxGeometry>
         </mxCell>
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-84" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="_M9vyBiTQRy0ly4204Hm-67" target="_M9vyBiTQRy0ly4204Hm-83">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-67" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Response::GetRoomProperties&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;{ roomIdentifier: ClientRoomIdentifier&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, entries:&amp;nbsp;&amp;nbsp; { Date: [Entry]? }?&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, users:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; { Date: [User]? }?&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, name:&amp;nbsp;&amp;nbsp; &amp;nbsp;&amp;nbsp; String?&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, url:&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; URL?&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, broadcast: URL?&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;}&lt;br&gt;&lt;/font&gt;&lt;/div&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="1040" y="190" width="350" height="150" as="geometry" />
         </mxCell>
@@ -69,6 +72,9 @@
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-74" value="&lt;div&gt;&lt;b&gt;GET &lt;/b&gt;- API&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;URL = &lt;i&gt;/room/get-room-properties?&lt;/i&gt;{ GetRoomProperties }&lt;br&gt;&lt;/div&gt;" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="1042.5" y="580" width="345" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-83" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.database;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="930" y="235" width="60" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
