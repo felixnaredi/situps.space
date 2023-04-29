@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-04-29T21:01:57.908Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/112.0" etag="Kolg2tl_9Gsy2Bf-RpnJ" version="21.2.1" type="github">
+<mxfile host="app.diagrams.net" modified="2023-04-29T21:11:23.668Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/112.0" etag="NOUn-gDmaraXItBcKw4m" version="21.2.1" type="github">
   <diagram name="Page-1" id="n51TAnZlxfRUYqPKpPW-">
     <mxGraphModel dx="1147" dy="688" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -72,7 +72,7 @@
         <mxCell id="_M9vyBiTQRy0ly4204Hm-75" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=circlePlus;endFill=0;" edge="1" parent="1" source="_M9vyBiTQRy0ly4204Hm-74" target="_M9vyBiTQRy0ly4204Hm-54">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="_M9vyBiTQRy0ly4204Hm-74" value="&lt;div&gt;&lt;b&gt;GET&lt;/b&gt;&lt;/div&gt;&lt;div&gt;URL = &lt;i&gt;/room/get-room-properties?&lt;/i&gt;{ GetRoomProperties }&lt;br&gt;&lt;/div&gt;" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-74" value="&lt;div&gt;&lt;b&gt;GET &lt;/b&gt;- API&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;URL = &lt;i&gt;/room/get-room-properties?&lt;/i&gt;{ GetRoomProperties }&lt;br&gt;&lt;/div&gt;" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="1042.5" y="580" width="345" height="50" as="geometry" />
         </mxCell>
       </root>
