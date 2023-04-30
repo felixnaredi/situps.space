@@ -18,6 +18,14 @@ pub struct GregorianScheduleDate
     day: u32,
 }
 
+impl GregorianScheduleDate
+{
+    pub fn new(year: i32, month: u32, day: u32) -> GregorianScheduleDate
+    {
+        GregorianScheduleDate { year, month, day }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EntryKey
@@ -47,7 +55,7 @@ pub struct Entry
 pub struct User
 {
     #[serde(rename = "_id")]
-    id: UserID,
+    user_id: UserID,
     display_name: String,
     theme: String,
 }

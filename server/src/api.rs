@@ -1,3 +1,5 @@
+mod get_room_properties;
+
 use std::{
     collections::HashMap,
     net::SocketAddr,
