@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-04-30T09:00:26.024Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/112.0" etag="E1Oz9wS6anOBUTVcMVTU" version="21.2.3" type="github">
+<mxfile host="app.diagrams.net" modified="2023-04-30T09:02:55.921Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/112.0" etag="gnQ6d_TSip_CkPiMdE9t" version="21.2.3" type="github">
   <diagram name="Page-1" id="n51TAnZlxfRUYqPKpPW-">
     <mxGraphModel dx="1075" dy="645" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -107,12 +107,12 @@
           <mxGeometry x="1000" y="525" width="60" height="60" as="geometry" />
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-92" value="rooms" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=default;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="790" y="290" width="160" height="120" as="geometry">
+          <mxGeometry x="790" y="290" width="180" height="120" as="geometry">
             <mxRectangle x="850" y="210" width="70" height="30" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_M9vyBiTQRy0ly4204Hm-93" value="&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;{ _id:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; OId&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;, name:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; String&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;, url:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; URL&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;, broadcast: URL&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;}&lt;br&gt;&lt;/font&gt;&lt;/div&gt;" style="text;strokeColor=default;fillColor=default;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="_M9vyBiTQRy0ly4204Hm-92" vertex="1">
-          <mxGeometry y="26" width="160" height="94" as="geometry" />
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-93" value="&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;{ _id:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; OId&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;, displayName: String&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;, url:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; URL&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;, broadcast:&amp;nbsp;&amp;nbsp; URL&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;}&lt;br&gt;&lt;/font&gt;&lt;/div&gt;" style="text;strokeColor=default;fillColor=default;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="_M9vyBiTQRy0ly4204Hm-92" vertex="1">
+          <mxGeometry y="26" width="180" height="94" as="geometry" />
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-98" value="entries" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=default;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="620" y="490" width="280" height="130" as="geometry">
