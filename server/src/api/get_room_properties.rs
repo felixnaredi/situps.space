@@ -47,26 +47,35 @@ impl<T: Serialize> Serialize for Base64EncodedRequest<T>
     }
 }
 
-#[derive(Deserialize)]
-struct Field
-{
-    b64: String,
-}
-
 struct Base64EncodedRequestVisitor<T>(PhantomData<T>);
 
-impl<'de, T> Visitor<'de> for Base64EncodedRequestVisitor<T>
+impl<'de> Visitor<'de> for Base64EncodedRequestVisitor<GetRoomPropertiesRequest>
 {
-    type Value = Base64EncodedRequest<T>;
+    type Value = Base64EncodedRequest<GetRoomPropertiesRequest>;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result
     {
         write!(formatter, "struct Base64EncodedRequest<T>")?;
         Ok(())
     }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        match map.next_entry::<&str, &str>()? {
+            Some(("b64", data)) => {
+                let data = base64::engine::general_purpose::STANDARD_NO_PAD
+                    .decode(data)
+                    .unwrap();
+                Ok(Base64EncodedRequest(serde_json::from_slice(&data).unwrap()))
+            }
+            _ => Err(serde::de::Error::missing_field("b64")),
+        }
+    }
 }
 
-impl<'de, T: Deserialize<'de>> Deserialize<'de> for Base64EncodedRequest<T>
+impl<'de> Deserialize<'de> for Base64EncodedRequest<GetRoomPropertiesRequest>
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -76,7 +85,7 @@ impl<'de, T: Deserialize<'de>> Deserialize<'de> for Base64EncodedRequest<T>
         deserializer.deserialize_struct(
             "Base64EncodedRequest",
             FIELDS,
-            Base64EncodedRequestVisitor::<T>(PhantomData),
+            Base64EncodedRequestVisitor(PhantomData),
         )
     }
 }
@@ -138,12 +147,10 @@ mod test
         Client,
         Uri,
     };
-    use serde::de::DeserializeOwned;
     use tokio::{
         sync::oneshot,
         task::JoinError,
     };
-    use warp::reply::Response;
 
     use super::*;
 
@@ -161,7 +168,7 @@ mod test
             warp::path!("api" / "room" / "get-room-properties")
                 .and(warp::query::<Base64EncodedRequest<GetRoomPropertiesRequest>>())
                 .map(move |request| {
-                    println!("{:#?}", request);
+                    println!("server received request: {:?}", request);
                     assert_eq!(request, value);
                     warp::reply()
                 }),
@@ -176,8 +183,6 @@ mod test
     #[tokio::test]
     async fn requests_are_parsed_correctly()
     {
-        println!("channel created");
-
         let request = GetRoomPropertiesRequest {
             room_id: 1,
             dates: vec![
@@ -192,15 +197,7 @@ mod test
             broadcast: false,
         };
 
-        let (tx, server) = server_expecting_request(
-            8001,
-            Base64EncodedRequest(request.clone()),
-        );
-
-        println!(
-            "{}",
-            serde_urlencoded::to_string(&Base64EncodedRequest(request)).unwrap()
-        );
+        let (tx, server) = server_expecting_request(8001, Base64EncodedRequest(request));
 
         let client = Client::new();
         let res = client
@@ -211,6 +208,8 @@ mod test
             .unwrap();
         println!("status: {}", res.status());
         println!("body: {:?}", res.body());
+
+        assert!(res.status().is_success());
 
         tx.send(()).unwrap();
         server.await.ok();
