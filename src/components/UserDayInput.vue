@@ -65,8 +65,8 @@ async function updateAmount(event: Event) {
   <div class="border-t-2 border-solid border-stone-700" :class="{
     'bg-sky-200': user.theme == 'ocean' && amount == null,
     'bg-sky-500': user.theme == 'ocean' && amount != null,
-    'bg-green-200': user.theme == 'forest' && amount == null,
-    'bg-green-500': user.theme == 'forest' && amount != null,
+    'bg-green-200': user.theme == 'forrest' && amount == null,
+    'bg-green-500': user.theme == 'forrest' && amount != null,
   }">
     <h3 class="ml-2">{{ user.displayName }}</h3>
     <div>

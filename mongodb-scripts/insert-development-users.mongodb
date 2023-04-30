@@ -3,14 +3,24 @@ use("development");
 db.users.drop();
 
 db.users.insertMany([
-    {
-        _id: "ana",
-        displayName: "Ana",
-        theme: "ocean"
-    },
-    {
-        _id: "bob",
-        displayName: "Bob7",
-        theme: "forest",
-    }
-])
+  {
+    _id: "ana",
+    displayName: "Ana",
+    theme: "ocean",
+  },
+  {
+    _id: "bob",
+    displayName: "Bob7",
+    theme: "forrest",
+  },
+  {
+    _id: "caleb",
+    displayName: "Cal3b",
+    theme: "ocean",
+  },
+  {
+    _id: "damiel",
+    displayName: "DamnDamiel",
+    theme: "forrest",
+  },
+]);
