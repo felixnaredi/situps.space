@@ -1,0 +1,38 @@
+// MongoDB Playground
+// Use Ctrl+Space inside a snippet or a string literal to trigger completions.
+
+// Create a new database.
+use("development");
+
+db.entries.drop();
+
+function fillMonth(year, month, daysInMonth, room) {
+  users = db.rooms.findOne({ _id: room._id }).users;
+  return Array.from(new Array(daysInMonth).keys())
+    .flatMap((day) => {
+      return users.map((user) => {
+        if (Math.random() > 0.25) {
+          return {
+            _id: {
+              userId: user,
+              roomId: room._id,
+              scheduleDate: {
+                year,
+                month,
+                day: day + 1,
+              },
+            },
+            amount: Math.ceil(Math.random() * 100),
+          };
+        }
+      });
+    })
+    .filter((x) => x != undefined);
+}
+
+rooms = db.rooms.find({ _id: { $exists: true } }, { _id: true }).toArray();
+
+for (const room of rooms) {
+  db.entries.insertMany(fillMonth(2023, 4, 30, room));
+  db.entries.insertMany(fillMonth(2023, 5, 31, room));
+}

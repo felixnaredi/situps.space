@@ -1,0 +1,26 @@
+use("development");
+
+db.rooms.drop();
+
+rooms = ["situps", "excercise", "yoga"];
+users = db.users.find({ _id: { $exists: true } }, { _id: true }).toArray();
+
+function randomSelection(a, min, max) {
+  const acc = new Set();
+  const n = min + Math.random() * (max - min);
+  while (acc.size < n) {
+    acc.add(a[Math.floor(Math.random() * a.length)]._id);
+  }
+  return Array.from(acc);
+}
+
+db.rooms.insertMany(
+  rooms.map((room) => {
+    return {
+      displayName: room,
+      url: `room/${room}`,
+      broadcast: `room/broadcast/${room}`,
+      users: randomSelection(users, 1, 4),
+    };
+  })
+);
