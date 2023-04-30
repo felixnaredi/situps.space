@@ -1,11 +1,11 @@
-<mxfile host="app.diagrams.net" modified="2023-04-30T00:08:23.457Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/112.0" etag="eYvzuVMjhhZIp-JIkAqX" version="21.2.1" type="github">
+<mxfile host="app.diagrams.net" modified="2023-04-30T00:10:18.000Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/112.0" etag="lGmXQCXtqgmTWyytyWOQ" version="21.2.1" type="github">
   <diagram name="Page-1" id="n51TAnZlxfRUYqPKpPW-">
-    <mxGraphModel dx="956" dy="573" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1720" dy="1032" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="_M9vyBiTQRy0ly4204Hm-54" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Request::GetRoomProperties&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;&amp;nbsp; { roomIdentifier: ClientRoomIdentifier&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;&amp;nbsp; , dates:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; [Date]?&amp;nbsp; (default: [])&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;&amp;nbsp; , entries:&amp;nbsp;&amp;nbsp; boolean? (default: false)&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;&amp;nbsp; , users:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; boolean? (default: false)&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;&amp;nbsp; , name:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; boolean? (default: false)&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;&amp;nbsp; , url:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; boolean? (default: false)&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;&amp;nbsp; , broadcast: boolean? (default: false)&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;&amp;nbsp; }&lt;br&gt;&lt;/font&gt;&lt;/div&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="1040" y="380" width="350" height="160" as="geometry" />
+          <mxGeometry x="1170" y="580" width="350" height="160" as="geometry" />
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-55" value="" style="shape=component;jettyWidth=8;jettyHeight=4;" vertex="1" parent="_M9vyBiTQRy0ly4204Hm-54">
           <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
@@ -30,15 +30,15 @@
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-66" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1230" y="330" as="sourcePoint" />
-            <mxPoint x="1230" y="330" as="targetPoint" />
+            <mxPoint x="1360" y="530" as="sourcePoint" />
+            <mxPoint x="1360" y="530" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-82" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;dashed=1;" edge="1" parent="1" source="_M9vyBiTQRy0ly4204Hm-67" target="_M9vyBiTQRy0ly4204Hm-74">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1450" y="265" />
-              <mxPoint x="1450" y="605" />
+              <mxPoint x="1580" y="465" />
+              <mxPoint x="1580" y="805" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -46,7 +46,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-67" value="&lt;p style=&quot;margin:0px;margin-top:6px;text-align:center;&quot;&gt;&lt;b&gt;Response::GetRoomProperties&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;{ roomIdentifier: ClientRoomIdentifier&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, entries:&amp;nbsp;&amp;nbsp; { Date: [Entry]? }?&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, users:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; { Date: [User]? }?&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, name:&amp;nbsp;&amp;nbsp; &amp;nbsp;&amp;nbsp; String?&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, url:&amp;nbsp;&amp;nbsp; &amp;nbsp; &amp;nbsp; URL?&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;, broadcast: URL?&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;}&lt;br&gt;&lt;/font&gt;&lt;/div&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="1040" y="190" width="350" height="150" as="geometry" />
+          <mxGeometry x="1170" y="390" width="350" height="150" as="geometry" />
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-68" value="" style="shape=component;jettyWidth=8;jettyHeight=4;" vertex="1" parent="_M9vyBiTQRy0ly4204Hm-67">
           <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
@@ -71,19 +71,22 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-74" value="&lt;div&gt;&lt;b&gt;GET &lt;/b&gt;- API&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;URL = &lt;i&gt;/room/get-room-properties?&lt;/i&gt;{ GetRoomProperties }&lt;br&gt;&lt;/div&gt;" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="1042.5" y="580" width="345" height="50" as="geometry" />
+          <mxGeometry x="1172.5" y="780" width="345" height="50" as="geometry" />
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-96" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.581;entryY=0.992;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="_M9vyBiTQRy0ly4204Hm-83" target="_M9vyBiTQRy0ly4204Hm-93">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="_M9vyBiTQRy0ly4204Hm-100" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="_M9vyBiTQRy0ly4204Hm-83" target="_M9vyBiTQRy0ly4204Hm-99">
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-103" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="_M9vyBiTQRy0ly4204Hm-83" target="_M9vyBiTQRy0ly4204Hm-102">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-104" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="_M9vyBiTQRy0ly4204Hm-83" target="_M9vyBiTQRy0ly4204Hm-98">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-83" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.database;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="930" y="235" width="60" height="60" as="geometry" />
+          <mxGeometry x="1060" y="435" width="60" height="60" as="geometry" />
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-92" value="rooms" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=default;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="830" y="50" width="160" height="120" as="geometry">
+          <mxGeometry x="850" y="210" width="160" height="120" as="geometry">
             <mxRectangle x="960" y="-20" width="70" height="30" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
@@ -91,12 +94,20 @@
           <mxGeometry y="26" width="160" height="94" as="geometry" />
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-98" value="entries" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=default;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="570" y="210" width="280" height="110" as="geometry">
+          <mxGeometry x="690" y="410" width="280" height="110" as="geometry">
             <mxRectangle x="960" y="-20" width="70" height="30" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
         <mxCell id="_M9vyBiTQRy0ly4204Hm-99" value="&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;{ _id: { scheduledDate: Date&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; , userId:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; UserId&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; }&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;, amount&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;}&lt;br&gt;&lt;/font&gt;&lt;/div&gt;" style="text;strokeColor=none;fillColor=default;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="_M9vyBiTQRy0ly4204Hm-98">
           <mxGeometry y="26" width="280" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-101" value="&lt;div&gt;users&lt;/div&gt;" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=default;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="770" y="560" width="160" height="120" as="geometry">
+            <mxRectangle x="960" y="-20" width="70" height="30" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_M9vyBiTQRy0ly4204Hm-102" value="&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;{ id: String&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;, name: String&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;, theme: Theme&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font face=&quot;Courier New&quot;&gt;}&lt;/font&gt;&lt;br&gt;&lt;/div&gt;" style="text;strokeColor=none;fillColor=default;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="_M9vyBiTQRy0ly4204Hm-101">
+          <mxGeometry y="26" width="160" height="94" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
