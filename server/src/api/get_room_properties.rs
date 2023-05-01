@@ -1,24 +1,15 @@
-use std::{
-    collections::HashMap,
-    marker::PhantomData,
-};
+use std::collections::HashMap;
 
-use base64::Engine as _;
 use serde::{
-    de::Visitor,
-    ser::SerializeMap,
     Deserialize,
     Serialize,
 };
 use warp::Filter;
 
-use crate::{
-    api::Base64EncodedRequest,
-    schemes::{
-        Entry,
-        GregorianScheduleDate,
-        User,
-    },
+use crate::schemes::{
+    Entry,
+    GregorianScheduleDate,
+    User,
 };
 
 fn default_as_false() -> bool
@@ -30,15 +21,6 @@ fn default_as_empty_vec<T>() -> Vec<T>
 {
     Vec::new()
 }
-
-// -------------------------------------------------------------------------------------------------
-// TODO:
-//   Hopefully the deserializer can be generalized for any reasonable T. It would fit good in its
-//   own file.
-//
-
-// End of deserializer
-// --------------------------------------------------------------------------------------------------
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -103,6 +85,7 @@ mod test
     };
 
     use super::*;
+    use crate::api::Base64EncodedRequest;
 
     fn server_expecting_request(
         port: u16,
