@@ -12,10 +12,13 @@ use serde::{
 };
 use warp::Filter;
 
-use crate::schemes::{
-    Entry,
-    GregorianScheduleDate,
-    User,
+use crate::{
+    api::Base64EncodedRequest,
+    schemes::{
+        Entry,
+        GregorianScheduleDate,
+        User,
+    },
 };
 
 fn default_as_false() -> bool
@@ -28,67 +31,14 @@ fn default_as_empty_vec<T>() -> Vec<T>
     Vec::new()
 }
 
-#[derive(Debug, PartialEq, Clone)]
-struct Base64EncodedRequest<T>(T);
+// -------------------------------------------------------------------------------------------------
+// TODO:
+//   Hopefully the deserializer can be generalized for any reasonable T. It would fit good in its
+//   own file.
+//
 
-impl<T: Serialize> Serialize for Base64EncodedRequest<T>
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let mut map = serializer.serialize_map(Some(1))?;
-        map.serialize_entry(
-            "b64",
-            &base64::engine::general_purpose::STANDARD_NO_PAD
-                .encode(serde_json::to_string(&self.0).unwrap()),
-        )?;
-        map.end()
-    }
-}
-
-struct Base64EncodedRequestVisitor<T>(PhantomData<T>);
-
-impl<'de> Visitor<'de> for Base64EncodedRequestVisitor<GetRoomPropertiesRequest>
-{
-    type Value = Base64EncodedRequest<GetRoomPropertiesRequest>;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
-        write!(formatter, "struct Base64EncodedRequest<T>")?;
-        Ok(())
-    }
-
-    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-    where
-        A: serde::de::MapAccess<'de>,
-    {
-        match map.next_entry::<&str, &str>()? {
-            Some(("b64", data)) => {
-                let data = base64::engine::general_purpose::STANDARD_NO_PAD
-                    .decode(data)
-                    .unwrap();
-                Ok(Base64EncodedRequest(serde_json::from_slice(&data).unwrap()))
-            }
-            _ => Err(serde::de::Error::missing_field("b64")),
-        }
-    }
-}
-
-impl<'de> Deserialize<'de> for Base64EncodedRequest<GetRoomPropertiesRequest>
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &'static [&'static str] = &["b64"];
-        deserializer.deserialize_struct(
-            "Base64EncodedRequest",
-            FIELDS,
-            Base64EncodedRequestVisitor(PhantomData),
-        )
-    }
-}
+// End of deserializer
+// --------------------------------------------------------------------------------------------------
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]

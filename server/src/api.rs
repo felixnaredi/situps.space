@@ -1,4 +1,5 @@
 mod get_room_properties;
+mod base64_encoded_request;
 
 use std::{
     collections::HashMap,
@@ -44,6 +45,8 @@ use crate::{
         Request,
     },
 };
+
+pub use base64_encoded_request::Base64EncodedRequest;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config
