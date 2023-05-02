@@ -75,11 +75,24 @@ pub fn handle() -> impl warp::Filter
 #[cfg(test)]
 mod test
 {
-    use std::str::FromStr;
+    use std::{
+        cell::RefCell,
+        ops::DerefMut,
+        str::FromStr,
+        sync::Mutex,
+    };
 
-    use hyper::{
+    use futures::TryStreamExt;
+    use mongodb::{
+        bson::doc,
+        options::{
+            ClientOptions,
+            FindOptions,
+            ServerApi,
+            ServerApiVersion,
+        },
         Client,
-        Uri,
+        Database,
     };
     use tokio::{
         sync::oneshot,
@@ -117,6 +130,11 @@ mod test
 
     fn send_request(port: u32, url_parameters: &str) -> hyper::client::ResponseFuture
     {
+        use hyper::{
+            Client,
+            Uri,
+        };
+
         let client = Client::new();
         client.get(
             Uri::from_str(&format!(
@@ -211,5 +229,183 @@ mod test
         //
         tx.send(()).unwrap();
         server.await.unwrap();
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct CreateUser
+    {
+        display_name: String,
+        theme: String,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct CreateRoom
+    {
+        display_name: String,
+        url: String,
+        broadcast: String,
+        users: Vec<mongodb::bson::oid::ObjectId>,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Id
+    {
+        date: GregorianScheduleDate,
+        room: mongodb::bson::oid::ObjectId,
+        user: mongodb::bson::oid::ObjectId,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct CreateEntry
+    {
+        #[serde(rename = "_id")]
+        id: Id,
+        amount: i32,
+    }
+
+    static DATABASE_IS_FILLED: Mutex<RefCell<bool>> = Mutex::new(RefCell::new(false));
+
+    async fn ids(
+        db: &Database,
+        collection: &str,
+    ) -> Result<Vec<mongodb::bson::oid::ObjectId>, Box<dyn std::error::Error>>
+    {
+        #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+        struct Query
+        {
+            _id: mongodb::bson::oid::ObjectId,
+        }
+
+        Ok(db
+            .collection::<Query>(collection)
+            .find(
+                doc! {},
+                Some(
+                    FindOptions::builder()
+                        .projection(doc! {"_id": true })
+                        .build(),
+                ),
+            )
+            .await?
+            .try_collect::<Vec<_>>()
+            .await?
+            .into_iter()
+            .map(|x| x._id)
+            .collect())
+    }
+
+    async fn database() -> Result<Database, Box<dyn std::error::Error>>
+    {
+        let mut client_options = ClientOptions::parse("mongodb://127.0.0.1:27017").await?;
+        client_options.server_api =
+            Some(ServerApi::builder().version(ServerApiVersion::V1).build());
+
+        let client = Client::with_options(client_options)?;
+        let db = client.database("test-get-room-properties");
+
+        match DATABASE_IS_FILLED.lock().unwrap().borrow_mut().deref_mut() {
+            x if *x == false => {
+                //
+                // Drop old database.
+                //
+                db.drop(None).await.unwrap();
+
+                //
+                // Insert users.
+                //
+                db.collection("users")
+                    .insert_many(
+                        [
+                            //
+                            // display_name , theme
+                            //
+                            (".}1qyp}~L%", "forrest"),
+                            ("*ErF.0 $=?ze", "forrest"),
+                            ("7e{Fm18L|p", "ocean"),
+                            ("up/|CThg", "ocean"),
+                        ]
+                        .into_iter()
+                        .map(|(display_name, theme)| CreateUser {
+                            display_name: display_name.to_owned(),
+                            theme: theme.to_owned(),
+                        }),
+                        None,
+                    )
+                    .await?;
+                let u = ids(&db, "users").await?;
+
+                //
+                // Insert rooms.
+                //
+                db.collection("rooms")
+                    .insert_many(
+                        [
+                            //
+                            // display_name    , users
+                            //
+                            ("OXtvty)RBVzmlvY-", vec![u[0], u[1], u[2], u[3]]),
+                            ("m(%0~FiwluTS$", vec![u[0], u[2]]),
+                        ]
+                        .into_iter()
+                        .enumerate()
+                        .map(|(i, (display_name, users))| CreateRoom {
+                            display_name: display_name.to_owned(),
+                            url: format!("http://127.0.0.1:8002/room/{}", i),
+                            broadcast: format!("http://127.0.0.1:8002/room/broadcast/{}", i),
+                            users,
+                        }),
+                        None,
+                    )
+                    .await?;
+                let r = ids(&db, "rooms").await?;
+
+                //
+                // Insert entries.
+                //
+                db.collection("entries")
+                    .insert_many(
+                        [
+                            //
+                            // date                                 , room, user, amount
+                            //
+                            (GregorianScheduleDate::new(1555, 2, 13), r[0], u[0], 10),
+                            (GregorianScheduleDate::new(1555, 2, 13), r[0], u[1], 11),
+                            (GregorianScheduleDate::new(1555, 2, 13), r[0], u[2], 12),
+                            (GregorianScheduleDate::new(1555, 2, 13), r[0], u[3], 13),
+                            (GregorianScheduleDate::new(1555, 2, 14), r[0], u[1], 21),
+                            (GregorianScheduleDate::new(1555, 2, 14), r[0], u[2], 22),
+                            (GregorianScheduleDate::new(1555, 2, 14), r[0], u[3], 23),
+                            (GregorianScheduleDate::new(1555, 2, 16), r[0], u[0], 30),
+                            (GregorianScheduleDate::new(1555, 2, 16), r[0], u[1], 31),
+                            (GregorianScheduleDate::new(1555, 2, 17), r[0], u[0], 40),
+                            (GregorianScheduleDate::new(1555, 2, 13), r[1], u[0], 110),
+                            (GregorianScheduleDate::new(1555, 2, 17), r[1], u[2], 120),
+                        ]
+                        .map(|(date, room, user, amount)| CreateEntry {
+                            id: Id { date, room, user },
+                            amount,
+                        }),
+                        None,
+                    )
+                    .await?;
+
+                *x = true;
+            }
+            _ => {}
+        }
+
+        Ok(db)
+    }
+
+    #[tokio::test]
+    async fn f()
+    {
+        database().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn g()
+    {
+        database().await.unwrap();
     }
 }
