@@ -1424,6 +1424,7 @@ dependencies = [
  "hyper",
  "log",
  "mongodb",
+ "rand",
  "serde",
  "serde_json",
  "serde_urlencoded",
