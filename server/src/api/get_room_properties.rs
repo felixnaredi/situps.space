@@ -1,11 +1,13 @@
 use std::collections::HashMap;
 
+use mongodb::bson::oid::ObjectId;
 use serde::{
     Deserialize,
     Serialize,
 };
 use warp::Filter;
 
+use super::Base64EncodedRequest;
 use crate::schemes::{
     Entry,
     GregorianScheduleDate,
@@ -26,7 +28,7 @@ fn default_as_empty_vec<T>() -> Vec<T>
 #[serde(rename_all = "camelCase")]
 struct GetRoomPropertiesRequest
 {
-    room_id: u64,
+    room_id: ObjectId,
 
     #[serde(default = "default_as_empty_vec")]
     dates: Vec<GregorianScheduleDate>,
@@ -47,30 +49,38 @@ struct GetRoomPropertiesRequest
     broadcast: bool,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct GetRoomPropertiesResponse
 {
-    room_id: u64,
-    entries: HashMap<GregorianScheduleDate, Entry>,
-    users: HashMap<GregorianScheduleDate, User>,
+    room_id: ObjectId,
+    entries: Option<HashMap<GregorianScheduleDate, Entry>>,
+    users: Option<HashMap<GregorianScheduleDate, User>>,
     display_name: Option<String>,
     url: Option<String>,
     broadcast: Option<String>,
 }
 
-pub fn handle() -> impl warp::Filter
+pub fn handle() -> impl Filter<Extract = (warp::reply::Json,), Error = warp::Rejection> + Clone
 {
-    warp::path!("api" / "room" / "get-room-properties")
-        .and(warp::query::<GetRoomPropertiesRequest>())
-        .map(|request| GetRoomPropertiesResponse {
-            room_id: 1,
-            entries: HashMap::new(),
-            users: HashMap::new(),
-            display_name: None,
-            url: None,
-            broadcast: None,
-        })
+    warp::path!("api" / "room" / "get-room-properties").and(warp::query().map(
+        |request: Base64EncodedRequest<GetRoomPropertiesRequest>| {
+            // panic!();
+            // warp::reply()
+            warp::reply::json(&GetRoomPropertiesResponse {
+                room_id: request.0.room_id,
+                entries: None,
+                users: None,
+                display_name: None,
+                url: None,
+                broadcast: None,
+            })
+        },
+    ))
 }
+
+// -------------------------------------------------------------------------------------------------
+// Tests.
+// -------------------------------------------------------------------------------------------------
 
 #[cfg(test)]
 mod test
@@ -83,6 +93,7 @@ mod test
     };
 
     use futures::TryStreamExt;
+    use hyper::body::HttpBody;
     use mongodb::{
         bson::doc,
         options::{
@@ -157,7 +168,7 @@ mod test
             // Generate request.
             //
             let request = GetRoomPropertiesRequest {
-                room_id: rng.gen(),
+                room_id: ObjectId::new(),
                 dates: (0..rng.gen_range(size))
                     .into_iter()
                     .map(|_| {
@@ -206,7 +217,7 @@ mod test
         let (tx, server) = server_expecting_request(
             8001,
             Base64EncodedRequest(GetRoomPropertiesRequest {
-                room_id: 17956551056096027663,
+                room_id: ObjectId::from_bytes([62, 101, 67, 0, 114, 70, 127, 42, 108, 120, 49, 27]),
                 dates: vec![],
                 entries: false,
                 users: false,
@@ -219,9 +230,12 @@ mod test
         //
         // Send url encoded request to the server and check that it was successful.
         //
-        let response = send_request(8001, "b64=eyJyb29tSWQiOjE3OTU2NTUxMDU2MDk2MDI3NjYzfQo")
-            .await
-            .unwrap();
+        let response = send_request(
+            8001,
+            "b64=eyJyb29tSWQiOnsiJG9pZCI6IjNlNjU0MzAwNzI0NjdmMmE2Yzc4MzExYiJ9fQo",
+        )
+        .await
+        .unwrap();
         assert!(response.status().is_success());
 
         //
@@ -244,15 +258,15 @@ mod test
         display_name: String,
         url: String,
         broadcast: String,
-        users: Vec<mongodb::bson::oid::ObjectId>,
+        users: Vec<ObjectId>,
     }
 
     #[derive(Debug, Serialize, Deserialize)]
     struct Id
     {
         date: GregorianScheduleDate,
-        room: mongodb::bson::oid::ObjectId,
-        user: mongodb::bson::oid::ObjectId,
+        room: ObjectId,
+        user: ObjectId,
     }
 
     #[derive(Debug, Serialize, Deserialize)]
@@ -268,12 +282,12 @@ mod test
     async fn ids(
         db: &Database,
         collection: &str,
-    ) -> Result<Vec<mongodb::bson::oid::ObjectId>, Box<dyn std::error::Error>>
+    ) -> Result<Vec<ObjectId>, Box<dyn std::error::Error>>
     {
         #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
         struct Query
         {
-            _id: mongodb::bson::oid::ObjectId,
+            _id: ObjectId,
         }
 
         Ok(db
@@ -398,14 +412,49 @@ mod test
     }
 
     #[tokio::test]
-    async fn f()
+    async fn request_entries_and_users_from_one_day()
     {
-        database().await.unwrap();
-    }
+        let db = database().await.unwrap();
+        let r = ids(&db, "rooms").await.unwrap();
 
-    #[tokio::test]
-    async fn g()
-    {
-        database().await.unwrap();
+        let (tx, rx) = oneshot::channel();
+        let (_, server) =
+            warp::serve(handle()).bind_with_graceful_shutdown(([127, 0, 0, 1], 8003), async move {
+                rx.await.ok();
+            });
+        let server = tokio::task::spawn(server);
+
+        let client = hyper::Client::new();
+        let response = client
+            .get(
+                hyper::Uri::from_str(&format!(
+                    "http://127.0.0.1:8003/api/room/get-room-properties?{}",
+                    serde_urlencoded::to_string(Base64EncodedRequest(GetRoomPropertiesRequest {
+                        room_id: r[0].clone(),
+                        dates: vec![],
+                        entries: false,
+                        users: false,
+                        display_name: false,
+                        url: false,
+                        broadcast: false
+                    }))
+                    .unwrap()
+                ))
+                .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert!(response.status().is_success());
+
+        println!(
+            "{:?}",
+            serde_json::from_slice::<GetRoomPropertiesResponse>(
+                &response.into_body().data().await.unwrap().unwrap()
+            )
+            .unwrap()
+        );
+
+        tx.send(()).unwrap();
+        server.await.unwrap();
     }
 }

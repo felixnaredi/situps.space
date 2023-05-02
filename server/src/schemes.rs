@@ -9,7 +9,7 @@ use serde::{
 
 pub type UserID = String;
 
-#[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize, Hash, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct GregorianScheduleDate
 {
