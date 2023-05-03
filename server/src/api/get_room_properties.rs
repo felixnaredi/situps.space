@@ -1,6 +1,12 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    sync::Arc,
+};
 
-use mongodb::bson::oid::ObjectId;
+use mongodb::{
+    bson::oid::ObjectId,
+    Database,
+};
 use serde::{
     Deserialize,
     Serialize,
@@ -19,10 +25,15 @@ use crate::schemes::{
 // -------------------------------------------------------------------------------------------------
 
 /// The routes that handle a 'get-room-properties' request.
-pub fn routes() -> impl Filter<Extract = (warp::reply::Json,), Error = warp::Rejection> + Clone
+pub fn routes(
+    db: Arc<Database>,
+) -> impl Filter<Extract = (warp::reply::Json,), Error = warp::Rejection> + Clone
 {
     warp::path!("api" / "room" / "get-room-properties").and(warp::query().map(
         |request: Base64EncodedRequest<GetRoomPropertiesRequest>| {
+            // TODO:
+            //   Reject request with non existant room id.
+
             // panic!();
             // warp::reply()
             warp::reply::json(&GetRoomPropertiesResponse {
@@ -433,14 +444,16 @@ mod test
         // Launch the server.
         //
         let (tx, rx) = oneshot::channel();
-        let (_, server) =
-            warp::serve(routes()).bind_with_graceful_shutdown(([127, 0, 0, 1], 8003), async move {
+        let (_, server) = warp::serve(routes(Arc::new(db))).bind_with_graceful_shutdown(
+            ([127, 0, 0, 1], 8003),
+            async move {
                 rx.await.ok();
-            });
+            },
+        );
         let server = tokio::task::spawn(server);
 
         //
-        // Either expect an exact value of the response or a predicate.
+        // The expected value of the tests are either an exact value of the response or a predicate.
         //
         enum Expect
         {
@@ -581,6 +594,9 @@ mod test
                 })),
             ),
         ] {
+            //
+            // Send the request.
+            //
             let response = send_request(
                 8003,
                 &serde_urlencoded::to_string(Base64EncodedRequest(request)).unwrap(),
@@ -588,19 +604,117 @@ mod test
             .await
             .unwrap();
 
+            //
+            // Assert it was successful.
+            //
             assert!(response.status().is_success());
 
+            //
+            // Parse response. Deserialize it into a `GetRoomPropertiesResponse`.
+            //
             let response = serde_json::from_slice::<GetRoomPropertiesResponse>(
                 &response.into_body().data().await.unwrap().unwrap(),
             )
             .unwrap();
 
+            //
+            // Check if the response is as expected.
+            //
             match expected {
                 Expect::Value(expected) => assert_eq!(expected, response),
                 Expect::Predicate(p) => assert!(p(response)),
             };
         }
 
+        //
+        // Shutdown server.
+        //
+        tx.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn bad_requests()
+    {
+        //
+        // Fetch database.
+        //
+        let db = database().await.unwrap();
+
+        //
+        // Launch the server.
+        //
+        let (tx, rx) = oneshot::channel();
+        let (_, server) = warp::serve(routes(Arc::new(db))).bind_with_graceful_shutdown(
+            ([127, 0, 0, 1], 8004),
+            async move {
+                rx.await.ok();
+            },
+        );
+        let server = tokio::task::spawn(server);
+
+        //
+        // The request that will be tested are either created from an instance of
+        // `GetRoomPropertiesRequest` or a string of url parameters.
+        //
+        enum Request
+        {
+            Instance(GetRoomPropertiesRequest),
+            UrlParameters(String),
+        }
+
+        //
+        // Iterate over bad requests.
+        //
+        for request in [
+            //
+            // Empty parameters.
+            //
+            Request::UrlParameters("".to_owned()),
+            //
+            // Nonsense JSON.
+            // {"WETFCWATF":"FEHWRSUQ","FUNBNCKEWT":110124}
+            //
+            Request::UrlParameters(
+                "eyJXRVRGQ1dBVEYiOiJGRUhXUlNVUSIsIkZVTkJOQ0tFV1QiOjExMDEyNH0K".to_owned(),
+            ),
+            //
+            // Non existant room id.
+            //
+            Request::Instance(GetRoomPropertiesRequest {
+                room_id: ObjectId::new(),
+                dates: vec![],
+                entries: false,
+                users: false,
+                display_name: false,
+                url: false,
+                broadcast: false,
+            }),
+        ] {
+            //
+            // Send the request.
+            //
+            let response = send_request(
+                8004,
+                &match request {
+                    Request::Instance(request) => {
+                        serde_urlencoded::to_string(Base64EncodedRequest(request)).unwrap()
+                    }
+                    Request::UrlParameters(parameters) => parameters,
+                },
+            )
+            .await
+            .unwrap();
+
+            //
+            // Assert client error.
+            //
+            assert!(response.status().is_client_error());
+        }
+
+        //
+        // Shutdown server.
+        //
         tx.send(()).unwrap();
         server.await.unwrap();
     }

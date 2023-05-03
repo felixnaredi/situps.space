@@ -120,7 +120,7 @@ pub async fn serve(config: &Config) -> Result<(), Box<dyn std::error::Error>>
             }
         });
 
-    Ok(warp::serve(api_users.or(socket_entry))
+    Ok(warp::serve(api_users.or(socket_entry).or(get_room_properties::routes(db.clone())))
         .run((config.socket_address, config.socket_port))
         .await)
 }
