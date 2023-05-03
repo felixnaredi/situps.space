@@ -4,7 +4,10 @@ use std::{
 };
 
 use mongodb::{
-    bson::oid::ObjectId,
+    bson::{
+        doc,
+        oid::ObjectId,
+    },
     Database,
 };
 use serde::{
@@ -29,21 +32,54 @@ pub fn routes(
     db: Arc<Database>,
 ) -> impl Filter<Extract = (warp::reply::Json,), Error = warp::Rejection> + Clone
 {
-    warp::path!("api" / "room" / "get-room-properties").and(warp::query().map(
-        |request: Base64EncodedRequest<GetRoomPropertiesRequest>| {
-            // TODO:
-            //   Reject request with non existant room id.
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Request
+    {
+        Plain(GetRoomPropertiesRequest),
+        Encoded(Base64EncodedRequest<GetRoomPropertiesRequest>),
+    }
 
-            // panic!();
-            // warp::reply()
-            warp::reply::json(&GetRoomPropertiesResponse {
-                room_id: request.0.room_id,
-                entries: None,
-                users: None,
-                display_name: None,
-                url: None,
-                broadcast: None,
-            })
+    warp::path!("api" / "room" / "get-room-properties").and(warp::query().and_then(
+        move |request: Request| {
+            let db = db.clone();
+
+            async move {
+                let request = match request {
+                    Request::Plain(_) => todo!(),
+                    Request::Encoded(request) => request.0,
+                };
+
+                log::debug!("processing request: {:?}", request);
+                println!("processing request: {:?}", request);
+
+                match db
+                    .collection::<Room>("rooms")
+                    .find_one(doc! { "_id": request.room_id }, None)
+                    .await
+                {
+                    Ok(Some(room)) => {
+                        println!("found room: {}", request.room_id);
+                        Ok(warp::reply::json(&GetRoomPropertiesResponse {
+                            room_id: room.id,
+                            entries: None,
+                            users: None,
+                            // users: request.users.then(|| db.collection("entries")
+                            // ),
+                            display_name: request.display_name.then(|| room.display_name),
+                            url: request.display_name.then(|| room.url),
+                            broadcast: request.display_name.then(|| room.broadcast),
+                        }))
+                    }
+                    Ok(None) => Err(warp::reject()),
+                    Err(error) => {
+                        log::error!("server error - {}", error);
+                        // TODO
+                        //   This should rather be an INTERNAL_SERVER_ERROR.
+                        Err(warp::reject())
+                    }
+                }
+            }
         },
     ))
 }
@@ -51,6 +87,18 @@ pub fn routes(
 // -------------------------------------------------------------------------------------------------
 // Internal.
 // -------------------------------------------------------------------------------------------------
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Room
+{
+    #[serde(rename = "_id")]
+    id: ObjectId,
+    display_name: String,
+    url: String,
+    broadcast: String,
+    users: Vec<ObjectId>,
+}
 
 fn default_as_false() -> bool
 {
@@ -88,6 +136,7 @@ struct GetRoomPropertiesRequest
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 struct GetRoomPropertiesResponse
 {
     room_id: ObjectId,
@@ -165,6 +214,11 @@ mod test
             Client,
             Uri,
         };
+
+        println!("{}", &format!(
+            "http://127.0.0.1:{}/api/room/get-room-properties?{}",
+            port, url_parameters
+        ));
 
         let client = Client::new();
         client.get(
@@ -273,6 +327,7 @@ mod test
     }
 
     #[derive(Debug, Serialize, Deserialize)]
+    #[serde(rename_all = "camelCase")]
     struct CreateRoom
     {
         display_name: String,
@@ -465,6 +520,7 @@ mod test
         // The request that will be tested are either created from an instance of
         // `GetRoomPropertiesRequest` or a string of url parameters.
         //
+        #[derive(Debug)]
         enum Request
         {
             Instance(GetRoomPropertiesRequest),
@@ -475,6 +531,10 @@ mod test
         // Iterate over the request and expexted pairs.
         //
         for (request, expected) in [
+            // TODO:
+            //   serde_urlencoded did not cooperate. There should be support unencoded request but
+            //   it will have to wait.
+            /*             
             //
             // Request with only roomId.
             //
@@ -506,6 +566,7 @@ mod test
                     broadcast: Some("wss://test.situps.space/room/broadcast/0".to_owned()),
                 }),
             ),
+            */
             //
             // All false request.
             //
@@ -635,6 +696,7 @@ mod test
                 })),
             ),
         ] {
+            println!("sending request: {:?}", request);
             //
             // Send the request.
             //

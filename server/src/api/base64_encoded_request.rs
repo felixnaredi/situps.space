@@ -4,6 +4,7 @@ use base64::Engine as _;
 use serde::{
     de::{
         DeserializeOwned,
+        MapAccess,
         Visitor,
     },
     ser::SerializeMap,
@@ -48,7 +49,7 @@ where
 
     fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
     where
-        A: serde::de::MapAccess<'de>,
+        A: MapAccess<'de>,
     {
         // TODO:
         //   Avoid using `unwrap`. There should be ways to return fitting `Err`.
@@ -67,9 +68,9 @@ where
                         //
                         &base64::engine::general_purpose::STANDARD_NO_PAD
                             .decode(data)
-                            .unwrap(),
+                            .map_err(|e| serde::de::Error::custom(format!("{:?}", e)))?,
                     )
-                    .unwrap(),
+                    .map_err(|e| serde::de::Error::custom(format!("{:?}", e)))?,
                 ))
             }
             _ => Err(serde::de::Error::missing_field("b64")),
