@@ -18,14 +18,6 @@ pub struct GregorianScheduleDate
     day: u32,
 }
 
-impl GregorianScheduleDate
-{
-    pub fn new(year: i32, month: u32, day: u32) -> GregorianScheduleDate
-    {
-        GregorianScheduleDate { year, month, day }
-    }
-}
-
 #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EntryKey
@@ -66,4 +58,13 @@ pub struct UpdateEntryCommit
 {
     pub date: DateTime<Utc>,
     pub data: Entry,
+}
+
+#[cfg(test)]
+impl GregorianScheduleDate
+{
+    pub fn new(year: i32, month: u32, day: u32) -> GregorianScheduleDate
+    {
+        GregorianScheduleDate { year, month, day }
+    }
 }

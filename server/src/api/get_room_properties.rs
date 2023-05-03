@@ -14,6 +14,33 @@ use crate::schemes::{
     User,
 };
 
+// -------------------------------------------------------------------------------------------------
+// Crate public interface.
+// -------------------------------------------------------------------------------------------------
+
+/// The routes that handle a 'get-room-properties' request.
+pub fn routes() -> impl Filter<Extract = (warp::reply::Json,), Error = warp::Rejection> + Clone
+{
+    warp::path!("api" / "room" / "get-room-properties").and(warp::query().map(
+        |request: Base64EncodedRequest<GetRoomPropertiesRequest>| {
+            // panic!();
+            // warp::reply()
+            warp::reply::json(&GetRoomPropertiesResponse {
+                room_id: request.0.room_id,
+                entries: None,
+                users: None,
+                display_name: None,
+                url: None,
+                broadcast: None,
+            })
+        },
+    ))
+}
+
+// -------------------------------------------------------------------------------------------------
+// Internal.
+// -------------------------------------------------------------------------------------------------
+
 fn default_as_false() -> bool
 {
     false
@@ -49,33 +76,15 @@ struct GetRoomPropertiesRequest
     broadcast: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct GetRoomPropertiesResponse
 {
     room_id: ObjectId,
-    entries: Option<HashMap<GregorianScheduleDate, Entry>>,
-    users: Option<HashMap<GregorianScheduleDate, User>>,
+    entries: Option<HashMap<GregorianScheduleDate, Vec<Entry>>>,
+    users: Option<HashMap<GregorianScheduleDate, Vec<User>>>,
     display_name: Option<String>,
     url: Option<String>,
     broadcast: Option<String>,
-}
-
-pub fn handle() -> impl Filter<Extract = (warp::reply::Json,), Error = warp::Rejection> + Clone
-{
-    warp::path!("api" / "room" / "get-room-properties").and(warp::query().map(
-        |request: Base64EncodedRequest<GetRoomPropertiesRequest>| {
-            // panic!();
-            // warp::reply()
-            warp::reply::json(&GetRoomPropertiesResponse {
-                room_id: request.0.room_id,
-                entries: None,
-                users: None,
-                display_name: None,
-                url: None,
-                broadcast: None,
-            })
-        },
-    ))
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -364,8 +373,8 @@ mod test
                         .enumerate()
                         .map(|(i, (display_name, users))| CreateRoom {
                             display_name: display_name.to_owned(),
-                            url: format!("http://127.0.0.1:8002/room/{}", i),
-                            broadcast: format!("http://127.0.0.1:8002/room/broadcast/{}", i),
+                            url: format!("https://test.situps.space/room/{}", i),
+                            broadcast: format!("wss://test.situps.space/room/broadcast/{}", i),
                             users,
                         }),
                         None,
@@ -412,47 +421,185 @@ mod test
     }
 
     #[tokio::test]
-    async fn request_entries_and_users_from_one_day()
+    async fn request_and_check_response()
     {
+        //
+        // Fetch database and room ids.
+        //
         let db = database().await.unwrap();
         let r = ids(&db, "rooms").await.unwrap();
 
+        //
+        // Launch the server.
+        //
         let (tx, rx) = oneshot::channel();
         let (_, server) =
-            warp::serve(handle()).bind_with_graceful_shutdown(([127, 0, 0, 1], 8003), async move {
+            warp::serve(routes()).bind_with_graceful_shutdown(([127, 0, 0, 1], 8003), async move {
                 rx.await.ok();
             });
         let server = tokio::task::spawn(server);
 
-        let client = hyper::Client::new();
-        let response = client
-            .get(
-                hyper::Uri::from_str(&format!(
-                    "http://127.0.0.1:8003/api/room/get-room-properties?{}",
-                    serde_urlencoded::to_string(Base64EncodedRequest(GetRoomPropertiesRequest {
-                        room_id: r[0].clone(),
-                        dates: vec![],
-                        entries: false,
-                        users: false,
-                        display_name: false,
-                        url: false,
-                        broadcast: false
-                    }))
-                    .unwrap()
-                ))
-                .unwrap(),
+        //
+        // Either expect an exact value of the response or a predicate.
+        //
+        enum Expect
+        {
+            Value(GetRoomPropertiesResponse),
+            Predicate(Box<dyn Fn(GetRoomPropertiesResponse) -> bool>),
+        }
+
+        //
+        // Iterate over the request and expexted pairs.
+        //
+        for (request, expected) in [
+            //
+            // Empty request.
+            //
+            (
+                GetRoomPropertiesRequest {
+                    room_id: r[0].clone(),
+                    dates: vec![],
+                    entries: false,
+                    users: false,
+                    display_name: false,
+                    url: false,
+                    broadcast: false,
+                },
+                Expect::Value(GetRoomPropertiesResponse {
+                    room_id: r[0].clone(),
+                    entries: None,
+                    users: None,
+                    display_name: None,
+                    url: None,
+                    broadcast: None,
+                }),
+            ),
+            //
+            // `display_name`, `url` and `broadcast` are correct for room 0.
+            //
+            (
+                GetRoomPropertiesRequest {
+                    room_id: r[0].clone(),
+                    dates: vec![],
+                    entries: false,
+                    users: false,
+                    display_name: true,
+                    url: true,
+                    broadcast: true,
+                },
+                Expect::Value(GetRoomPropertiesResponse {
+                    room_id: r[0].clone(),
+                    entries: None,
+                    users: None,
+                    display_name: Some("OXtvty)RBVzmlvY-".to_owned()),
+                    url: Some("https://test.situps.space/room/0".to_owned()),
+                    broadcast: Some("wss://test.situps.space/room/broadcast/0".to_owned()),
+                }),
+            ),
+            //
+            // `display_name`, `url` and `broadcast` are correct for room 1.
+            //
+            (
+                GetRoomPropertiesRequest {
+                    room_id: r[1].clone(),
+                    dates: vec![],
+                    entries: false,
+                    users: false,
+                    display_name: true,
+                    url: true,
+                    broadcast: true,
+                },
+                Expect::Value(GetRoomPropertiesResponse {
+                    room_id: r[1].clone(),
+                    entries: None,
+                    users: None,
+                    display_name: Some("m(%0~FiwluTS$".to_owned()),
+                    url: Some("https://test.situps.space/room/1".to_owned()),
+                    broadcast: Some("wss://test.situps.space/room/broadcast/1".to_owned()),
+                }),
+            ),
+            //
+            // Request mask works properly.
+            //
+            (
+                GetRoomPropertiesRequest {
+                    room_id: r[1].clone(),
+                    dates: vec![],
+                    entries: true,
+                    users: false,
+                    display_name: true,
+                    url: false,
+                    broadcast: true,
+                },
+                Expect::Predicate(Box::new(|response| {
+                    matches!(response.entries, Some(_))
+                        && matches!(response.users, None)
+                        && matches!(response.display_name, Some(_))
+                        && matches!(response.url, None)
+                        && matches!(response.broadcast, Some(_))
+                })),
+            ),
+            //
+            // Check properties from the whole period for room 0.
+            //
+            (
+                GetRoomPropertiesRequest {
+                    room_id: r[0].clone(),
+                    dates: vec![
+                        GregorianScheduleDate::new(1555, 2, 13),
+                        GregorianScheduleDate::new(1555, 2, 14),
+                        GregorianScheduleDate::new(1555, 2, 14),
+                        GregorianScheduleDate::new(1555, 2, 16),
+                        GregorianScheduleDate::new(1555, 2, 17),
+                    ],
+                    entries: true,
+                    users: true,
+                    display_name: false,
+                    url: false,
+                    broadcast: false,
+                },
+                Expect::Predicate(Box::new(|response| {
+                    response.display_name == None
+                        && response.url == None
+                        && response.broadcast == None
+                        && response.entries.unwrap().into_values().flatten().count() == 10
+                        && response
+                            .users
+                            .as_ref()
+                            .unwrap()
+                            .get(&GregorianScheduleDate::new(1555, 2, 13))
+                            .unwrap()
+                            .len()
+                            == 4
+                        && response
+                            .users
+                            .unwrap()
+                            .get(&GregorianScheduleDate::new(1555, 2, 14))
+                            .unwrap()
+                            .len()
+                            == 3
+                })),
+            ),
+        ] {
+            let response = send_request(
+                8003,
+                &serde_urlencoded::to_string(Base64EncodedRequest(request)).unwrap(),
             )
             .await
             .unwrap();
-        assert!(response.status().is_success());
 
-        println!(
-            "{:?}",
-            serde_json::from_slice::<GetRoomPropertiesResponse>(
-                &response.into_body().data().await.unwrap().unwrap()
+            assert!(response.status().is_success());
+
+            let response = serde_json::from_slice::<GetRoomPropertiesResponse>(
+                &response.into_body().data().await.unwrap().unwrap(),
             )
-            .unwrap()
-        );
+            .unwrap();
+
+            match expected {
+                Expect::Value(expected) => assert_eq!(expected, response),
+                Expect::Predicate(p) => assert!(p(response)),
+            };
+        }
 
         tx.send(()).unwrap();
         server.await.unwrap();
