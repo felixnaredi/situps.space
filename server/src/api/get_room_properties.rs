@@ -462,14 +462,55 @@ mod test
         }
 
         //
+        // The request that will be tested are either created from an instance of
+        // `GetRoomPropertiesRequest` or a string of url parameters.
+        //
+        enum Request
+        {
+            Instance(GetRoomPropertiesRequest),
+            UrlParameters(String),
+        }
+
+        //
         // Iterate over the request and expexted pairs.
         //
         for (request, expected) in [
             //
-            // Empty request.
+            // Request with only roomId.
             //
             (
-                GetRoomPropertiesRequest {
+                Request::UrlParameters(format!("roomId={}", r[0].clone())),
+                Expect::Value(GetRoomPropertiesResponse {
+                    room_id: r[0].clone(),
+                    entries: None,
+                    users: None,
+                    display_name: None,
+                    url: None,
+                    broadcast: None,
+                }),
+            ),
+            //
+            // Non base64 encoded request.
+            //
+            (
+                Request::UrlParameters(format!(
+                    "roomId={}&displayName=true&broadcast=true",
+                    r[0].clone()
+                )),
+                Expect::Value(GetRoomPropertiesResponse {
+                    room_id: r[0].clone(),
+                    entries: None,
+                    users: None,
+                    display_name: Some("OXtvty)RBVzmlvY-".to_owned()),
+                    url: None,
+                    broadcast: Some("wss://test.situps.space/room/broadcast/0".to_owned()),
+                }),
+            ),
+            //
+            // All false request.
+            //
+            (
+                Request::Instance(GetRoomPropertiesRequest {
                     room_id: r[0].clone(),
                     dates: vec![],
                     entries: false,
@@ -477,7 +518,7 @@ mod test
                     display_name: false,
                     url: false,
                     broadcast: false,
-                },
+                }),
                 Expect::Value(GetRoomPropertiesResponse {
                     room_id: r[0].clone(),
                     entries: None,
@@ -491,7 +532,7 @@ mod test
             // `display_name`, `url` and `broadcast` are correct for room 0.
             //
             (
-                GetRoomPropertiesRequest {
+                Request::Instance(GetRoomPropertiesRequest {
                     room_id: r[0].clone(),
                     dates: vec![],
                     entries: false,
@@ -499,7 +540,7 @@ mod test
                     display_name: true,
                     url: true,
                     broadcast: true,
-                },
+                }),
                 Expect::Value(GetRoomPropertiesResponse {
                     room_id: r[0].clone(),
                     entries: None,
@@ -513,7 +554,7 @@ mod test
             // `display_name`, `url` and `broadcast` are correct for room 1.
             //
             (
-                GetRoomPropertiesRequest {
+                Request::Instance(GetRoomPropertiesRequest {
                     room_id: r[1].clone(),
                     dates: vec![],
                     entries: false,
@@ -521,7 +562,7 @@ mod test
                     display_name: true,
                     url: true,
                     broadcast: true,
-                },
+                }),
                 Expect::Value(GetRoomPropertiesResponse {
                     room_id: r[1].clone(),
                     entries: None,
@@ -535,7 +576,7 @@ mod test
             // Request mask works properly.
             //
             (
-                GetRoomPropertiesRequest {
+                Request::Instance(GetRoomPropertiesRequest {
                     room_id: r[1].clone(),
                     dates: vec![],
                     entries: true,
@@ -543,7 +584,7 @@ mod test
                     display_name: true,
                     url: false,
                     broadcast: true,
-                },
+                }),
                 Expect::Predicate(Box::new(|response| {
                     matches!(response.entries, Some(_))
                         && matches!(response.users, None)
@@ -556,7 +597,7 @@ mod test
             // Check properties from the whole period for room 0.
             //
             (
-                GetRoomPropertiesRequest {
+                Request::Instance(GetRoomPropertiesRequest {
                     room_id: r[0].clone(),
                     dates: vec![
                         GregorianScheduleDate::new(1555, 2, 13),
@@ -570,7 +611,7 @@ mod test
                     display_name: false,
                     url: false,
                     broadcast: false,
-                },
+                }),
                 Expect::Predicate(Box::new(|response| {
                     response.display_name == None
                         && response.url == None
@@ -599,7 +640,12 @@ mod test
             //
             let response = send_request(
                 8003,
-                &serde_urlencoded::to_string(Base64EncodedRequest(request)).unwrap(),
+                &match request {
+                    Request::Instance(request) => {
+                        serde_urlencoded::to_string(Base64EncodedRequest(request)).unwrap()
+                    }
+                    Request::UrlParameters(parameters) => parameters,
+                },
             )
             .await
             .unwrap();
@@ -676,7 +722,7 @@ mod test
             // {"WETFCWATF":"FEHWRSUQ","FUNBNCKEWT":110124}
             //
             Request::UrlParameters(
-                "eyJXRVRGQ1dBVEYiOiJGRUhXUlNVUSIsIkZVTkJOQ0tFV1QiOjExMDEyNH0K".to_owned(),
+                "b64=eyJXRVRGQ1dBVEYiOiJGRUhXUlNVUSIsIkZVTkJOQ0tFV1QiOjExMDEyNH0K".to_owned(),
             ),
             //
             // Non existant room id.
