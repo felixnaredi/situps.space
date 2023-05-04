@@ -49,7 +49,6 @@ pub fn routes(
                 };
 
                 log::debug!("processing request: {:?}", request);
-                println!("processing request: {:?}", request);
 
                 match db
                     .collection::<Room>("rooms")
@@ -72,110 +71,112 @@ pub fn routes(
                             amount: u32,
                         }
 
-                        let entries: Result<HashMap<GregorianScheduleDate, Vec<OutputEntry>>, _> = db
-                        .collection::<Input>("entries")
-                        .aggregate(
-                            [
-                                doc! {
-                                    "$match": {
-                                        "_id.date": {
-                                            "$in": request.dates.iter().map(|date|
-                                                mongodb::bson::to_bson(&date).unwrap()).collect::<Vec<_>>()
-                                        },
-                                        "_id.room": request.room_id
-                                    }
-                                },
-                                doc! {
-                                    "$group": {
-                                        "_id": "$_id.date",
-                                        "entries": {
-                                            "$push": {
-                                                "user": "$_id.user",
-                                                "amount": "$amount",
+                        let entries = if request.entries {
+                            let entries: Result<HashMap<GregorianScheduleDate, Vec<OutputEntry>>, _>
+                                = db
+                            .collection::<Input>("entries")
+                            .aggregate(
+                                [
+                                    doc! {
+                                        "$match": {
+                                            "_id.date": {
+                                                "$in": request.dates.iter()
+                                                    .map(|date|
+                                                        mongodb::bson::to_bson(&date).unwrap())
+                                                    .collect::<Vec<_>>()
                                             },
+                                            "_id.room": request.room_id
                                         }
                                     },
-                                },
-                            ],
-                            None,
-                        )
-                        .await
-                        .unwrap()
-                        .map_ok(|x| {
-                            (
-                                mongodb::bson::from_bson::<GregorianScheduleDate>(
-                                    x.get("_id").unwrap().clone(),
-                                )
-                                .unwrap(),
-
-                                mongodb::bson::from_bson::<Vec<OutputEntry>>(
-                                    x.get("entries").unwrap().clone(),
-                                )
-                                .unwrap(),
-                            )
-                        })
-                        .try_collect()
-                        .await;
-                        let entries = entries.unwrap();
-
-                        let users: Result<HashMap<GregorianScheduleDate, Vec<ObjectId>>, _> = db
-                        .collection::<Input>("entries")
-                        .aggregate(
-                            [
-                                doc! {
-                                    "$match": {
-                                        "_id.date": {
-                                            "$in": request.dates.iter().map(|date|
-                                                mongodb::bson::to_bson(&date).unwrap()).collect::<Vec<_>>()
-                                        },
-                                        "_id.room": request.room_id
-                                    }
-                                },
-                                doc! {
-                                    "$group": {
-                                        "_id": "$_id.date",
-                                        "users": {
-                                            "$push": "$_id.user",
+                                    doc! {
+                                        "$group": {
+                                            "_id": "$_id.date",
+                                            "entries": {
+                                                "$push": {
+                                                    "user": "$_id.user",
+                                                    "amount": "$amount",
+                                                },
+                                            }
                                         },
                                     },
-                                },
-                            ],
-                            None,
-                        )
-                        .await
-                        .unwrap()
-                        .map_ok(|x| {
-                            (
-                                mongodb::bson::from_bson::<GregorianScheduleDate>(
-                                    x.get("_id").unwrap().clone(),
-                                )
-                                .unwrap(),
-
-                                mongodb::bson::from_bson::<Vec<ObjectId>>(
-                                    x.get("users").unwrap().clone(),
-                                )
-                                .unwrap(),
+                                ],
+                                None,
                             )
-                        })
-                        .try_collect()
-                        .await;
-                        let users = users.unwrap();
+                            .await
+                            .unwrap()
+                            .map_ok(|x| {
+                                (
+                                    mongodb::bson::from_bson::<GregorianScheduleDate>(
+                                        x.get("_id").unwrap().clone(),
+                                    )
+                                    .unwrap(),
 
-                        println!("found room: {}", request.room_id);
+                                    mongodb::bson::from_bson::<Vec<OutputEntry>>(
+                                        x.get("entries").unwrap().clone(),
+                                    )
+                                    .unwrap(),
+                                )
+                            })
+                            .try_collect()
+                            .await;
+                            Some(entries.unwrap())
+                        } else {
+                            None
+                        };
 
-                        println!("response: {}", serde_json::to_string_pretty(&GetRoomPropertiesResponse {
-                            room_id: room.id,
-                            entries: request.entries.then(|| entries.clone()),
-                            users: request.users.then(|| users.clone()),
-                            display_name: request.display_name.then(|| room.display_name.clone()),
-                            url: request.url.then(|| room.url.clone()),
-                            broadcast: request.broadcast.then(|| room.broadcast.clone()),
-                        }).unwrap());
+                        let users = if request.users {
+                            let users: Result<HashMap<GregorianScheduleDate, Vec<ObjectId>>, _> = db
+                            .collection::<Input>("entries")
+                            .aggregate(
+                                [
+                                    doc! {
+                                        "$match": {
+                                            "_id.date": {
+                                                "$in": request.dates.iter()
+                                                    .map(|date|
+                                                            mongodb::bson::to_bson(&date).unwrap())
+                                                    .collect::<Vec<_>>()
+                                            },
+                                            "_id.room": request.room_id
+                                        }
+                                    },
+                                    doc! {
+                                        "$group": {
+                                            "_id": "$_id.date",
+                                            "users": {
+                                                "$push": "$_id.user",
+                                            },
+                                        },
+                                    },
+                                ],
+                                None,
+                            )
+                            .await
+                            .unwrap()
+                            .map_ok(|x| {
+                                (
+                                    mongodb::bson::from_bson::<GregorianScheduleDate>(
+                                        x.get("_id").unwrap().clone(),
+                                    )
+                                    .unwrap(),
+
+                                    mongodb::bson::from_bson::<Vec<ObjectId>>(
+                                        x.get("users").unwrap().clone(),
+                                    )
+                                    .unwrap(),
+                                )
+                            })
+                            .try_collect()
+                            .await;
+                            Some(users.unwrap())
+                        } else {
+                            None
+                        };
 
                         Ok(warp::reply::json(&GetRoomPropertiesResponse {
                             room_id: room.id,
-                            entries: request.entries.then(|| entries),
-                            users: request.users.then(|| users),
+                            entries,
+                            users,
                             display_name: request.display_name.then(|| room.display_name),
                             url: request.url.then(|| room.url),
                             broadcast: request.broadcast.then(|| room.broadcast),
