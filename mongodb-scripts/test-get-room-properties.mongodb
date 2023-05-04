@@ -21,7 +21,7 @@ db.entries.aggregate([
           },
         ],
       },
-      "_id.room": ObjectId("6452c7ac9544b2371d5ffcf2"),
+      "_id.room": ObjectId("6452dc7760e4357deff775af"),
     },
   },
   {

@@ -3,6 +3,7 @@ use std::{
     sync::Arc,
 };
 
+use futures::TryStreamExt;
 use mongodb::{
     bson::{
         doc,
@@ -14,14 +15,11 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use serde_with::serde_as;
 use warp::Filter;
 
 use super::Base64EncodedRequest;
-use crate::schemes::{
-    Entry,
-    GregorianScheduleDate,
-    User,
-};
+use crate::schemes::GregorianScheduleDate;
 
 // -------------------------------------------------------------------------------------------------
 // Crate public interface.
@@ -59,16 +57,128 @@ pub fn routes(
                     .await
                 {
                     Ok(Some(room)) => {
+                        #[derive(Serialize, Deserialize)]
+                        struct Id
+                        {
+                            date: GregorianScheduleDate,
+                            user: ObjectId,
+                            room: ObjectId,
+                        }
+
+                        #[derive(Serialize, Deserialize)]
+                        struct Input
+                        {
+                            _id: Id,
+                            amount: u32,
+                        }
+
+                        let entries: Result<HashMap<GregorianScheduleDate, Vec<OutputEntry>>, _> = db
+                        .collection::<Input>("entries")
+                        .aggregate(
+                            [
+                                doc! {
+                                    "$match": {
+                                        "_id.date": {
+                                            "$in": request.dates.iter().map(|date|
+                                                mongodb::bson::to_bson(&date).unwrap()).collect::<Vec<_>>()
+                                        },
+                                        "_id.room": request.room_id
+                                    }
+                                },
+                                doc! {
+                                    "$group": {
+                                        "_id": "$_id.date",
+                                        "entries": {
+                                            "$push": {
+                                                "user": "$_id.user",
+                                                "amount": "$amount",
+                                            },
+                                        }
+                                    },
+                                },
+                            ],
+                            None,
+                        )
+                        .await
+                        .unwrap()
+                        .map_ok(|x| {
+                            (
+                                mongodb::bson::from_bson::<GregorianScheduleDate>(
+                                    x.get("_id").unwrap().clone(),
+                                )
+                                .unwrap(),
+
+                                mongodb::bson::from_bson::<Vec<OutputEntry>>(
+                                    x.get("entries").unwrap().clone(),
+                                )
+                                .unwrap(),
+                            )
+                        })
+                        .try_collect()
+                        .await;
+                        let entries = entries.unwrap();
+
+                        let users: Result<HashMap<GregorianScheduleDate, Vec<ObjectId>>, _> = db
+                        .collection::<Input>("entries")
+                        .aggregate(
+                            [
+                                doc! {
+                                    "$match": {
+                                        "_id.date": {
+                                            "$in": request.dates.iter().map(|date|
+                                                mongodb::bson::to_bson(&date).unwrap()).collect::<Vec<_>>()
+                                        },
+                                        "_id.room": request.room_id
+                                    }
+                                },
+                                doc! {
+                                    "$group": {
+                                        "_id": "$_id.date",
+                                        "users": {
+                                            "$push": "$_id.user",
+                                        },
+                                    },
+                                },
+                            ],
+                            None,
+                        )
+                        .await
+                        .unwrap()
+                        .map_ok(|x| {
+                            (
+                                mongodb::bson::from_bson::<GregorianScheduleDate>(
+                                    x.get("_id").unwrap().clone(),
+                                )
+                                .unwrap(),
+
+                                mongodb::bson::from_bson::<Vec<ObjectId>>(
+                                    x.get("users").unwrap().clone(),
+                                )
+                                .unwrap(),
+                            )
+                        })
+                        .try_collect()
+                        .await;
+                        let users = users.unwrap();
+
                         println!("found room: {}", request.room_id);
+
+                        println!("response: {}", serde_json::to_string_pretty(&GetRoomPropertiesResponse {
+                            room_id: room.id,
+                            entries: request.entries.then(|| entries.clone()),
+                            users: request.users.then(|| users.clone()),
+                            display_name: request.display_name.then(|| room.display_name.clone()),
+                            url: request.url.then(|| room.url.clone()),
+                            broadcast: request.broadcast.then(|| room.broadcast.clone()),
+                        }).unwrap());
+
                         Ok(warp::reply::json(&GetRoomPropertiesResponse {
                             room_id: room.id,
-                            entries: None,
-                            users: None,
-                            // users: request.users.then(|| db.collection("entries")
-                            // ),
+                            entries: request.entries.then(|| entries),
+                            users: request.users.then(|| users),
                             display_name: request.display_name.then(|| room.display_name),
-                            url: request.display_name.then(|| room.url),
-                            broadcast: request.display_name.then(|| room.broadcast),
+                            url: request.url.then(|| room.url),
+                            broadcast: request.broadcast.then(|| room.broadcast),
                         }))
                     }
                     Ok(None) => Err(warp::reject()),
@@ -135,13 +245,26 @@ struct GetRoomPropertiesRequest
     broadcast: bool,
 }
 
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+struct OutputEntry
+{
+    user: ObjectId,
+    amount: u32,
+}
+
+#[serde_as]
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 struct GetRoomPropertiesResponse
 {
     room_id: ObjectId,
-    entries: Option<HashMap<GregorianScheduleDate, Vec<Entry>>>,
-    users: Option<HashMap<GregorianScheduleDate, Vec<User>>>,
+
+    #[serde_as(as = "Option<Vec<(_, _)>>")]
+    entries: Option<HashMap<GregorianScheduleDate, Vec<OutputEntry>>>,
+
+    #[serde_as(as = "Option<Vec<(_, _)>>")]
+    users: Option<HashMap<GregorianScheduleDate, Vec<ObjectId>>>,
+
     display_name: Option<String>,
     url: Option<String>,
     broadcast: Option<String>,
@@ -215,10 +338,13 @@ mod test
             Uri,
         };
 
-        println!("{}", &format!(
-            "http://127.0.0.1:{}/api/room/get-room-properties?{}",
-            port, url_parameters
-        ));
+        println!(
+            "{}",
+            &format!(
+                "http://127.0.0.1:{}/api/room/get-room-properties?{}",
+                port, url_parameters
+            )
+        );
 
         let client = Client::new();
         client.get(
@@ -520,6 +646,7 @@ mod test
         // The request that will be tested are either created from an instance of
         // `GetRoomPropertiesRequest` or a string of url parameters.
         //
+        #[allow(dead_code)]
         #[derive(Debug)]
         enum Request
         {
@@ -534,7 +661,7 @@ mod test
             // TODO:
             //   serde_urlencoded did not cooperate. There should be support unencoded request but
             //   it will have to wait.
-            /*             
+            /*
             //
             // Request with only roomId.
             //
@@ -655,8 +782,28 @@ mod test
                 })),
             ),
             //
-            // Check properties from the whole period for room 0.
+            // Check the entries for two days.
             //
+            (
+                Request::Instance(GetRoomPropertiesRequest {
+                    room_id: r[0].clone(),
+                    dates: vec![
+                        GregorianScheduleDate::new(1555, 2, 14),
+                        GregorianScheduleDate::new(1555, 2, 16),
+                    ],
+                    entries: true,
+                    users: false,
+                    display_name: false,
+                    url: false,
+                    broadcast: false,
+                }),
+                Expect::Predicate(Box::new(|response| {
+                    response.display_name == None
+                        && response.url == None
+                        && response.broadcast == None
+                        && response.entries.unwrap().into_values().flatten().count() == 5
+                })),
+            ),
             (
                 Request::Instance(GetRoomPropertiesRequest {
                     room_id: r[0].clone(),

@@ -1,7 +1,7 @@
 mod api;
-mod schemes;
-mod entry_event;
 mod db;
+mod entry_event;
+mod schemes;
 
 use std::{
     env,
@@ -10,9 +10,7 @@ use std::{
 
 use simplelog::SimpleLogger;
 
-use crate::api::{
-    Config,
-};
+use crate::api::Config;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>>

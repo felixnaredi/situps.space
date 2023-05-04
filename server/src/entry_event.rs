@@ -40,22 +40,25 @@ pub enum Request
 
 pub mod response
 {
-    use crate::schemes::EntryKey;
-
     use super::*;
+    use crate::schemes::EntryKey;
 
     #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
     #[serde(rename_all = "camelCase")]
-    pub struct GetEntryData {
-        entry_key: EntryKey, 
-        entry_data: Option<EntryData>
+    pub struct GetEntryData
+    {
+        entry_key: EntryKey,
+        entry_data: Option<EntryData>,
     }
 
     impl GetEntryData
     {
         pub fn new(entry_key: EntryKey, entry_data: Option<EntryData>) -> GetEntryData
         {
-            GetEntryData { entry_key, entry_data }
+            GetEntryData {
+                entry_key,
+                entry_data,
+            }
         }
     }
 
@@ -92,8 +95,7 @@ impl Response
     {
         Message::text(
             serde_json::to_string(&Response::GetEntryData(response::GetEntryData::new(
-                entry_key,
-                entry_data,
+                entry_key, entry_data,
             )))
             .unwrap(),
         )
